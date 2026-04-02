@@ -1,0 +1,96 @@
+<!-- index.html -->
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>STOREDGE — Prototype</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <!-- Intro overlay (covers whole screen) -->
+  <div id="intro" class="intro" aria-hidden="false">
+    <div class="intro-inner" role="img" aria-label="STOREDGE logo intro">
+      <!-- Replace this SVG with your exact logo. This is an example: S (sky) + E (white italic) -->
+      <svg id="intro-logo" viewBox="0 0 420 120" xmlns="http://www.w3.org/2000/svg" width="420" height="120" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="grad-sky" x1="0" x2="1">
+            <stop offset="0%" stop-color="#00AEEF" />
+            <stop offset="100%" stop-color="#00AEEF" stop-opacity="0.9" />
+          </linearGradient>
+
+          <!-- the shine gradient (animated by background-position) -->
+          <linearGradient id="shine" x1="0" x2="1">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0" />
+            <stop offset="50%" stop-color="#ffffff" stop-opacity="0.9" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+          </linearGradient>
+
+          <mask id="text-mask">
+            <!-- mask uses filled text so we can animate a rect gradient across it -->
+            <rect x="0" y="0" width="420" height="120" fill="#000" />
+            <text x="16" y="86" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="96" fill="#fff">S</text>
+            <text x="150" y="86" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="96" fill="#fff" style="font-style:italic">E</text>
+          </mask>
+        </defs>
+
+        <!-- S filled with sky gradient -->
+        <text x="16" y="86" font-family="Inter, system-ui, sans-serif" font-weight="800" font-size="96" fill="url(#grad-sky)">S</text>
+
+        <!-- E base white with thin dark outline -->
+        <g>
+          <text x="150" y="86" font-family="Inter, system-ui, sans-serif" font-weight="900" font-size="96" fill="#ffffff" style="font-style:italic; stroke:#0D0D0D; stroke-width:1.5">E</text>
+        </g>
+
+        <!-- animated shine rectangle masked to the text area -->
+        <g mask="url(#text-mask)">
+          <rect id="shine-rect" x="-140" y="0" width="200" height="120" fill="url(#shine)" />
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- Main UI -->
+  <div id="app" class="app" aria-hidden="true">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-logo" aria-hidden="true">SE</span>
+        <span class="brand-title">STOREDGE</span>
+      </div>
+      <nav>
+        <button id="enterBtn" class="btn primary">Enter Dashboard</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section class="hero">
+        <h1>Local Cloud, Global Potential</h1>
+        <p class="lead">A prototype built with HTML, CSS and JavaScript. Sign in to upload and manage files.</p>
+        <div class="hero-cta">
+          <button id="openUpload" class="btn">Upload (mock)</button>
+          <button id="openPlans" class="btn outlined">View Plans</button>
+        </div>
+      </section>
+
+      <section class="upload-area" aria-live="polite">
+        <div class="upload-card">
+          <svg class="upload-ico" viewBox="0 0 24 24" width="56" height="56" aria-hidden="true"><path d="M12 3v9" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <h3>Upload files</h3>
+          <p class="muted">Click upload to select files (mock, no backend).</p>
+          <div class="upload-actions">
+            <input id="fileInput" type="file" multiple class="hidden" />
+            <button id="uploadBtn" class="btn primary">Upload files</button>
+          </div>
+          <div id="filesList" class="files-grid" aria-live="polite"></div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <small>Prototype · STOREDGE</small>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
