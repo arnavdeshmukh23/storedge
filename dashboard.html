@@ -98,6 +98,10 @@
   </style>
 </head>
 <body>
+  <script src="js/auth.js"></script>
+<script>
+  checkAuth();
+</script>
 
 <!-- SIDEBAR -->
 <div class="sidebar">
@@ -119,7 +123,7 @@
   <div class="nav-group" style="margin-top:16px">
     <div class="nav-label">Account</div>
     <div class="nav-item"><span class="ico">⚙️</span> Settings</div>
-    <a href="index.html" class="nav-item"><span class="ico">🚪</span> Log out</a>
+    <a href="#" class="nav-item" onclick="logout()">Log out</a>
   </div>
   <div class="storage-box">
     <div class="sto-head">
