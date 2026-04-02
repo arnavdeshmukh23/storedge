@@ -4,772 +4,356 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Storedge — Cloud Storage, Reimagined</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet"/>
+
   <style>
     :root {
       --sky: #00AEEF;
-      --sky-dim: rgba(0,174,239,0.15);
       --sky-glow: rgba(0,174,239,0.5);
+      --sky-dim: rgba(0,174,239,0.12);
       --bg: #06090f;
-      --surface: #0d1320;
-      --surface2: #121929;
+      --surface: #0c1219;
+      --surface2: #111b26;
       --border: rgba(255,255,255,0.07);
-      --text: #e8edf5;
-      --muted: rgba(232,237,245,0.45);
-      --accent: #00AEEF;
+      --text: #dde6f0;
+      --muted: rgba(221,230,240,0.42);
       --green: #00e5a0;
       --pink: #ff4dff;
+      --font-display: 'Clash Display', 'Syne', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
     }
 
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
     html { scroll-behavior: smooth; }
+    body { background: var(--bg); color: var(--text); font-family: var(--font-body); overflow-x: hidden; }
 
-    body {
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Sans', sans-serif;
-      overflow-x: hidden;
-    }
-
-    /* ─── INTRO OVERLAY ─── */
+    /* ══════════════════════
+       INTRO
+    ══════════════════════ */
     #intro {
       position: fixed; inset: 0; z-index: 9999;
       background: var(--bg);
       display: flex; align-items: center; justify-content: center;
-      flex-direction: column;
-      gap: 36px;
+      flex-direction: column; gap: 30px;
     }
 
-    #intro-svg-wrap {
-      position: relative;
-      width: 340px; height: 220px;
+    #intro-canvas { width: 380px; height: 240px; overflow: visible; }
+
+    /* cloud morph */
+    #cloud-group { opacity: 0; transform-origin: 190px 120px; }
+    #cloud-group.appear {
+      animation: cloudIn 1s cubic-bezier(0.34,1.45,0.64,1) 0.2s forwards;
+    }
+    @keyframes cloudIn {
+      from { opacity:0; transform: scale(0.5) rotate(-12deg); filter: blur(10px); }
+      to   { opacity:1; transform: scale(1)   rotate(0deg);   filter: blur(0); }
     }
 
-    #intro-svg {
-      width: 100%; height: 100%;
-      overflow: visible;
+    /* cloud border draw */
+    #cloud-outline { stroke-dasharray: 720; stroke-dashoffset: 720; }
+    #cloud-outline.draw { animation: drawCloud 1.3s ease 0.5s forwards; }
+    @keyframes drawCloud { to { stroke-dashoffset: 0; } }
+    #cloud-outline.glow {
+      animation: drawCloud 1.3s ease 0.5s forwards,
+                 cloudGlow 2s ease-in-out 2s infinite alternate;
+    }
+    @keyframes cloudGlow {
+      from { filter: drop-shadow(0 0 5px #00AEEF); stroke-width: 2; }
+      to   { filter: drop-shadow(0 0 22px #00AEEF) drop-shadow(0 0 55px rgba(0,174,239,0.3)); stroke-width: 3.5; }
     }
 
-    /* S piece — slides in from left */
-    #piece-s {
-      transform-origin: 170px 110px;
-      animation: slideInLeft 0.8s cubic-bezier(0.22,1,0.36,1) 0.3s both;
+    /* cloud fill breathe */
+    #cloud-group.appear #cloud-fill {
+      animation: breathe 2.5s ease-in-out 1s infinite alternate;
     }
-    @keyframes slideInLeft {
-      from { opacity:0; transform: translateX(-140px) scale(0.85); filter: blur(6px); }
-      to   { opacity:1; transform: translateX(0) scale(1); filter: blur(0); }
-    }
+    @keyframes breathe { from { opacity:0.05; } to { opacity:0.18; } }
 
-    /* E piece — slides in from right */
-    #piece-e {
-      transform-origin: 170px 110px;
-      animation: slideInRight 0.8s cubic-bezier(0.22,1,0.36,1) 0.5s both;
-    }
-    @keyframes slideInRight {
-      from { opacity:0; transform: translateX(140px) scale(0.85); filter: blur(6px); }
-      to   { opacity:1; transform: translateX(0) scale(1); filter: blur(0); }
-    }
+    /* SE inside cloud */
+    #cloud-se { opacity: 0; transition: opacity 0.8s ease; }
 
-    /* snap + lock pulse when they meet */
-    #piece-s, #piece-e {
-      filter: drop-shadow(0 0 0px var(--sky));
-    }
-    #piece-s.locked, #piece-e.locked {
-      animation: snapGlow 0.4s ease forwards;
-    }
-    @keyframes snapGlow {
-      0%   { filter: drop-shadow(0 0 2px var(--sky)); }
-      50%  { filter: drop-shadow(0 0 18px var(--sky)) drop-shadow(0 0 40px rgba(0,174,239,0.5)); }
-      100% { filter: drop-shadow(0 0 6px var(--sky)); }
-    }
-
-    /* cloud morph — fades in over the letters, letters fade out */
-    #cloud-final {
-      opacity: 0;
-      transform-origin: 170px 110px;
-    }
-    #cloud-final.morph {
-      animation: cloudMorphIn 0.9s cubic-bezier(0.34,1.4,0.64,1) forwards;
-    }
-    @keyframes cloudMorphIn {
-      from { opacity:0; transform: scale(0.6) rotate(-8deg); filter: blur(10px); }
-      to   { opacity:1; transform: scale(1) rotate(0deg); filter: blur(0); }
-    }
-
-    #cloud-border {
-      stroke-dasharray: 620;
-      stroke-dashoffset: 620;
-      transition: stroke-dashoffset 0s;
-    }
-    #cloud-border.draw {
-      animation: drawBorder 1s ease 0.3s forwards;
-    }
-    @keyframes drawBorder {
-      to { stroke-dashoffset: 0; }
-    }
-
-    #cloud-final.morph #cloud-fill {
-      animation: fillPulse 2s ease-in-out 0.8s infinite alternate;
-    }
-    @keyframes fillPulse {
-      from { opacity: 0.06; }
-      to   { opacity: 0.18; }
-    }
-
-    #cloud-border.glow {
-      animation: drawBorder 1s ease 0.3s forwards, borderGlow 1.8s ease-in-out 1.4s infinite alternate;
-    }
-    @keyframes borderGlow {
-      from { filter: drop-shadow(0 0 4px var(--sky)); stroke-width: 2.5; }
-      to   { filter: drop-shadow(0 0 14px var(--sky)) drop-shadow(0 0 30px rgba(0,174,239,0.4)); stroke-width: 3.5; }
-    }
-
-    /* letters fade out as cloud appears */
-    #pieces-group {
-      transition: opacity 0.5s ease;
-    }
-    #pieces-group.fade { opacity: 0; }
-
-    /* tagline below */
+    /* tagline */
     #intro-tagline {
-      font-family: 'Syne', sans-serif;
-      font-size: 14px;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
+      font-family: var(--font-body);
+      font-size: 11px; font-weight: 600;
+      letter-spacing: 0.3em; text-transform: uppercase;
       color: var(--sky);
-      opacity: 0;
-      transform: translateY(10px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      opacity: 0; transform: translateY(10px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
     }
-    #intro-tagline.show { opacity: 0.7; transform: translateY(0); }
+    #intro-tagline.show { opacity: 0.6; transform: translateY(0); }
 
     /* loading bar */
-    #load-bar-wrap {
-      width: 200px; height: 2px;
-      background: rgba(255,255,255,0.08);
-      border-radius: 999px;
-      overflow: hidden;
-      opacity: 0;
-      transition: opacity 0.4s;
+    #load-wrap {
+      width: 180px; height: 2px;
+      background: rgba(255,255,255,0.07);
+      border-radius: 99px; overflow: hidden;
+      opacity: 0; transition: opacity 0.4s;
     }
-    #load-bar-wrap.show { opacity: 1; }
+    #load-wrap.show { opacity: 1; }
     #load-bar {
-      height: 100%;
-      width: 0%;
+      height: 100%; width: 0%;
       background: linear-gradient(90deg, var(--sky), var(--green));
-      border-radius: 999px;
-      transition: width 2.2s cubic-bezier(0.4,0,0.2,1);
+      border-radius: 99px;
+      transition: width 2.4s cubic-bezier(0.4,0,0.2,1);
     }
     #load-bar.fill { width: 100%; }
 
-    /* intro exit */
-    #intro.exit {
-      animation: introExit 0.7s cubic-bezier(0.7,0,1,1) forwards;
-    }
-    @keyframes introExit {
-      to { opacity: 0; transform: scale(1.04); pointer-events: none; }
-    }
+    /* exit */
+    #intro.exit { animation: introOut 0.65s cubic-bezier(0.7,0,1,1) forwards; }
+    @keyframes introOut { to { opacity:0; transform:scale(1.05); pointer-events:none; } }
 
-    /* ─── MAIN SITE ─── */
-    #site { opacity: 0; transition: opacity 0.6s ease 0.1s; }
-    #site.visible { opacity: 1; }
+    /* ══════════════════════
+       MAIN SITE
+    ══════════════════════ */
+    #site { opacity:0; transition: opacity 0.7s ease 0.1s; }
+    #site.visible { opacity:1; }
 
-    /* NAV */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      position: fixed; top:0; left:0; right:0; z-index:100;
       display: flex; align-items: center; justify-content: space-between;
-      padding: 20px 60px;
-      backdrop-filter: blur(20px);
-      background: rgba(6,9,15,0.75);
+      padding: 18px 60px;
+      backdrop-filter: blur(24px);
+      background: rgba(6,9,15,0.8);
       border-bottom: 1px solid var(--border);
     }
-
     .nav-logo {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 24px;
-      letter-spacing: -0.5px;
-      background: linear-gradient(135deg, #fff 30%, var(--sky));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-family: var(--font-display); font-weight: 700; font-size: 22px; letter-spacing: -0.3px;
+      background: linear-gradient(135deg, #fff 20%, var(--sky));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
-    .nav-links {
-      display: flex; gap: 36px; list-style: none;
-    }
-    .nav-links a {
-      text-decoration: none;
-      font-size: 14px;
-      color: var(--muted);
-      transition: color 0.2s;
-    }
-    .nav-links a:hover { color: var(--text); }
-
-    .nav-actions { display: flex; gap: 12px; }
+    .nav-links { display:flex; gap:34px; list-style:none; }
+    .nav-links a { text-decoration:none; font-size:14px; font-weight:500; color:var(--muted); transition:color 0.2s; }
+    .nav-links a:hover { color:var(--text); }
+    .nav-actions { display:flex; gap:10px; }
 
     .btn {
-      padding: 10px 22px;
-      border-radius: 999px;
-      font-family: 'DM Sans', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      text-decoration: none;
-      transition: all 0.25s;
-      display: inline-flex; align-items: center; gap: 8px;
+      padding: 10px 22px; border-radius: 999px;
+      font-family: var(--font-body); font-size: 14px; font-weight: 600;
+      cursor: pointer; text-decoration: none; transition: all 0.25s;
+      display: inline-flex; align-items: center; gap: 7px; letter-spacing: 0.01em;
     }
-    .btn-ghost {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-    }
-    .btn-ghost:hover {
-      border-color: var(--sky);
-      color: var(--sky);
-    }
-    .btn-primary {
-      background: var(--sky);
-      border: 1px solid var(--sky);
-      color: #06090f;
-      font-weight: 600;
-    }
-    .btn-primary:hover {
-      background: #22c5ff;
-      box-shadow: 0 0 20px var(--sky-glow);
-    }
+    .btn-ghost { background:transparent; border:1px solid var(--border); color:var(--text); }
+    .btn-ghost:hover { border-color:var(--sky); color:var(--sky); }
+    .btn-primary { background:var(--sky); border:1px solid var(--sky); color:#06090f; }
+    .btn-primary:hover { background:#22c5ff; box-shadow:0 0 24px var(--sky-glow); }
 
-    /* ─── HERO ─── */
     .hero {
-      min-height: 100vh;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center;
-      padding: 120px 24px 80px;
-      position: relative;
-      overflow: hidden;
+      min-height: 100vh; display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      text-align:center; padding:120px 24px 80px;
+      position:relative; overflow:hidden;
     }
-
-    /* background mesh */
     .hero::before {
-      content: '';
-      position: absolute; inset: 0;
+      content:''; position:absolute; inset:0;
       background:
-        radial-gradient(ellipse 60% 40% at 50% 0%, rgba(0,174,239,0.12) 0%, transparent 70%),
-        radial-gradient(ellipse 40% 30% at 80% 80%, rgba(0,229,160,0.06) 0%, transparent 60%),
-        radial-gradient(ellipse 30% 20% at 20% 60%, rgba(255,77,255,0.05) 0%, transparent 60%);
-      pointer-events: none;
+        radial-gradient(ellipse 65% 45% at 50% -5%, rgba(0,174,239,0.13) 0%, transparent 70%),
+        radial-gradient(ellipse 35% 25% at 85% 85%, rgba(0,229,160,0.07) 0%, transparent 60%),
+        radial-gradient(ellipse 25% 20% at 15% 65%, rgba(255,77,255,0.05) 0%, transparent 60%);
+      pointer-events:none;
     }
-
-    /* grid lines */
     .hero::after {
-      content: '';
-      position: absolute; inset: 0;
+      content:''; position:absolute; inset:0;
       background-image:
-        linear-gradient(rgba(255,255,255,0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255,255,255,0.025) 1px, transparent 1px);
-      background-size: 60px 60px;
-      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 80%);
-      pointer-events: none;
+        linear-gradient(rgba(255,255,255,0.022) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.022) 1px, transparent 1px);
+      background-size: 56px 56px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 20%, transparent 80%);
+      pointer-events:none;
     }
 
     .hero-badge {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(0,174,239,0.1);
-      border: 1px solid rgba(0,174,239,0.25);
-      border-radius: 999px;
-      padding: 6px 16px;
-      font-size: 12px;
-      color: var(--sky);
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      margin-bottom: 28px;
-      animation: fadeUp 0.6s ease 0.1s both;
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(0,174,239,0.09); border:1px solid rgba(0,174,239,0.22);
+      border-radius:999px; padding:6px 16px;
+      font-size:11px; font-weight:600; color:var(--sky);
+      letter-spacing:0.1em; text-transform:uppercase;
+      margin-bottom:30px; animation:fadeUp 0.6s ease 0.1s both;
     }
-
-    .hero-badge span { width: 6px; height: 6px; background: var(--sky); border-radius: 50%; animation: pulse 1.5s ease infinite; }
-    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.4;transform:scale(0.7)} }
+    .hero-badge span { width:6px; height:6px; background:var(--sky); border-radius:50%; animation:pulse 1.6s ease infinite; }
+    @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.3;transform:scale(0.6)} }
 
     h1 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(42px, 6vw, 86px);
-      font-weight: 800;
-      line-height: 1.04;
-      letter-spacing: -2px;
-      max-width: 900px;
+      font-family: var(--font-display);
+      font-size: clamp(44px, 6.5vw, 90px); font-weight: 700;
+      line-height: 1.02; letter-spacing: -2.5px; max-width: 920px;
       animation: fadeUp 0.7s ease 0.2s both;
     }
-
-    h1 .gradient-text {
+    h1 .g {
       background: linear-gradient(135deg, var(--sky) 0%, var(--green) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
     }
-
     .hero-sub {
-      margin-top: 20px;
-      font-size: 18px;
-      color: var(--muted);
-      max-width: 560px;
-      line-height: 1.7;
-      animation: fadeUp 0.7s ease 0.3s both;
+      margin-top:22px; font-size:18px; font-weight:400; color:var(--muted);
+      max-width:520px; line-height:1.75; animation:fadeUp 0.7s ease 0.3s both;
     }
+    .hero-ctas { margin-top:42px; display:flex; gap:12px; animation:fadeUp 0.7s ease 0.4s both; }
+    .btn-xl { padding:14px 32px; font-size:15px; }
+    @keyframes fadeUp { from{opacity:0;transform:translateY(22px)} to{opacity:1;transform:translateY(0)} }
 
-    .hero-ctas {
-      margin-top: 40px;
-      display: flex; gap: 14px;
-      animation: fadeUp 0.7s ease 0.4s both;
-    }
-
-    .btn-xl {
-      padding: 14px 32px;
-      font-size: 16px;
-    }
-
-    @keyframes fadeUp {
-      from { opacity: 0; transform: translateY(24px); }
-      to   { opacity: 1; transform: translateY(0); }
-    }
-
-    /* stats row */
-    .stats-row {
-      margin-top: 70px;
-      display: flex; gap: 60px;
-      animation: fadeUp 0.7s ease 0.55s both;
-    }
-    .stat { text-align: center; }
+    .stats-row { margin-top:72px; display:flex; gap:64px; animation:fadeUp 0.7s ease 0.55s both; }
+    .stat { text-align:center; }
     .stat-num {
-      font-family: 'Syne', sans-serif;
-      font-size: 28px; font-weight: 800;
-      background: linear-gradient(135deg, #fff, var(--sky));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-family:var(--font-display); font-size:28px; font-weight:700;
+      background:linear-gradient(135deg,#fff,var(--sky));
+      -webkit-background-clip:text; -webkit-text-fill-color:transparent;
     }
-    .stat-label { font-size: 12px; color: var(--muted); margin-top: 4px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .stat-label { font-size:11px; font-weight:500; color:var(--muted); margin-top:5px; letter-spacing:0.08em; text-transform:uppercase; }
 
-    /* ─── FEATURES ─── */
-    .section { padding: 100px 60px; max-width: 1200px; margin: 0 auto; }
+    .section { padding:100px 60px; max-width:1200px; margin:0 auto; }
+    .section-label { font-size:11px; font-weight:600; letter-spacing:0.14em; text-transform:uppercase; color:var(--sky); margin-bottom:14px; }
+    .section-title { font-family:var(--font-display); font-size:clamp(28px,3.5vw,46px); font-weight:700; letter-spacing:-1.2px; line-height:1.08; max-width:480px; }
 
-    .section-label {
-      font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase;
-      color: var(--sky); margin-bottom: 14px;
-    }
-
-    .section-title {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(28px, 3.5vw, 44px);
-      font-weight: 800; letter-spacing: -1px;
-      line-height: 1.1;
-      max-width: 500px;
-    }
-
-    .features-grid {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 20px;
-      margin-top: 60px;
-    }
-
+    .features-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:60px; }
     .feature-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 20px;
-      padding: 32px;
-      position: relative;
-      overflow: hidden;
-      transition: border-color 0.3s, transform 0.3s;
+      background:var(--surface); border:1px solid var(--border); border-radius:22px; padding:30px;
+      position:relative; overflow:hidden; transition:border-color 0.3s,transform 0.3s;
     }
-    .feature-card:hover {
-      border-color: rgba(0,174,239,0.35);
-      transform: translateY(-4px);
-    }
-    .feature-card::before {
-      content: '';
-      position: absolute; top: 0; left: 0; right: 0; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--sky), transparent);
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-    .feature-card:hover::before { opacity: 1; }
+    .feature-card:hover { border-color:rgba(0,174,239,0.32); transform:translateY(-4px); }
+    .feature-card::before { content:''; position:absolute; top:0; left:0; right:0; height:1px; background:linear-gradient(90deg,transparent,var(--sky),transparent); opacity:0; transition:opacity 0.3s; }
+    .feature-card:hover::before { opacity:1; }
+    .feature-icon { width:46px; height:46px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px; margin-bottom:18px; }
+    .feature-card h3 { font-family:var(--font-display); font-size:17px; font-weight:600; margin-bottom:9px; letter-spacing:-0.3px; }
+    .feature-card p { font-size:14px; font-weight:400; color:var(--muted); line-height:1.72; }
 
-    .feature-icon {
-      width: 48px; height: 48px;
-      border-radius: 12px;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 22px;
-      margin-bottom: 20px;
-    }
+    .preview-section { padding:40px 60px 80px; }
+    .preview-label-wrap { text-align:center; margin-bottom:56px; }
+    .preview-shell { background:var(--surface); border:1px solid var(--border); border-radius:22px; overflow:hidden; max-width:1000px; margin:0 auto; box-shadow:0 40px 80px rgba(0,0,0,0.5),0 0 0 1px rgba(255,255,255,0.04); }
+    .window-bar { background:var(--surface2); border-bottom:1px solid var(--border); padding:13px 18px; display:flex; align-items:center; gap:10px; }
+    .dot { width:11px; height:11px; border-radius:50%; }
+    .dot-r{background:#ff5f56;} .dot-y{background:#ffbd2e;} .dot-g{background:#27c93f;}
+    .win-title { flex:1; text-align:center; font-size:12px; font-weight:500; color:var(--muted); }
+    .mock-dash { display:flex; height:460px; }
+    .mock-sidebar { width:210px; background:rgba(0,0,0,0.28); border-right:1px solid var(--border); padding:22px 14px; display:flex; flex-direction:column; gap:3px; }
+    .mock-logo { font-family:var(--font-display); font-weight:700; font-size:17px; color:var(--sky); padding:0 8px; margin-bottom:22px; }
+    .mock-nav-item { display:flex; align-items:center; gap:9px; padding:9px 10px; border-radius:9px; font-size:13px; font-weight:500; color:var(--muted); cursor:pointer; transition:all 0.2s; }
+    .mock-nav-item:hover,.mock-nav-item.active { background:rgba(0,174,239,0.1); color:var(--sky); }
+    .mock-nav-item .icon { font-size:15px; }
+    .mock-storage { margin-top:auto; background:rgba(0,174,239,0.07); border:1px solid rgba(0,174,239,0.18); border-radius:12px; padding:14px; }
+    .storage-bar-bg { width:100%; height:3px; background:rgba(255,255,255,0.08); border-radius:2px; margin:8px 0; overflow:hidden; }
+    .storage-bar-fill { height:100%; width:38%; background:linear-gradient(90deg,var(--sky),var(--green)); border-radius:2px; }
+    .storage-text { font-size:11px; font-weight:500; color:var(--muted); }
+    .mock-main { flex:1; padding:22px; display:flex; flex-direction:column; gap:18px; overflow:hidden; }
+    .mock-topbar { display:flex; align-items:center; gap:11px; }
+    .mock-search { flex:1; background:rgba(255,255,255,0.04); border:1px solid var(--border); border-radius:9px; height:34px; display:flex; align-items:center; padding:0 13px; gap:7px; font-size:13px; color:var(--muted); }
+    .mock-avatar { width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg,var(--sky),var(--green)); display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; color:#06090f; }
+    .mock-section-title { font-family:var(--font-display); font-size:15px; font-weight:600; margin-bottom:3px; }
+    .mock-files-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; }
+    .mock-file { background:var(--surface2); border:1px solid var(--border); border-radius:10px; padding:12px 10px; display:flex; flex-direction:column; align-items:center; gap:6px; font-size:11px; color:var(--muted); text-align:center; cursor:pointer; transition:all 0.2s; }
+    .mock-file:hover { border-color:rgba(0,174,239,0.28); background:rgba(0,174,239,0.05); }
+    .mock-file-icon { font-size:26px; }
+    .mock-file-name { font-size:11px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center; }
+    .mock-upload-btn { background:var(--sky); color:#06090f; border:none; border-radius:9px; padding:9px 18px; font-family:var(--font-body); font-weight:600; font-size:12px; cursor:pointer; display:flex; align-items:center; gap:5px; }
 
-    .feature-card h3 {
-      font-family: 'Syne', sans-serif;
-      font-size: 18px; font-weight: 700;
-      margin-bottom: 10px;
-    }
-    .feature-card p { font-size: 14px; color: var(--muted); line-height: 1.7; }
+    .pricing-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:18px; margin-top:60px; }
+    .pricing-card { background:var(--surface); border:1px solid var(--border); border-radius:22px; padding:34px; position:relative; transition:transform 0.3s; }
+    .pricing-card:hover { transform:translateY(-4px); }
+    .pricing-card.featured { border-color:var(--sky); background:linear-gradient(160deg,rgba(0,174,239,0.07) 0%,var(--surface) 60%); }
+    .featured-badge { position:absolute; top:-13px; left:50%; transform:translateX(-50%); background:var(--sky); color:#06090f; font-size:10px; font-weight:700; padding:4px 14px; border-radius:999px; letter-spacing:0.08em; text-transform:uppercase; }
+    .plan-name { font-family:var(--font-display); font-size:19px; font-weight:600; margin-bottom:7px; }
+    .plan-price { font-family:var(--font-display); font-size:42px; font-weight:700; background:linear-gradient(135deg,#fff,var(--sky)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .plan-price span { font-size:17px; font-weight:400; color:var(--muted); -webkit-text-fill-color:var(--muted); }
+    .plan-desc { font-size:14px; color:var(--muted); margin:12px 0 22px; line-height:1.65; }
+    .plan-features { list-style:none; display:flex; flex-direction:column; gap:9px; margin-bottom:28px; }
+    .plan-features li { font-size:14px; font-weight:400; color:var(--muted); display:flex; align-items:center; gap:8px; }
+    .plan-features li::before { content:'✓'; color:var(--sky); font-weight:700; }
 
-    /* ─── DASHBOARD PREVIEW ─── */
-    .preview-section {
-      padding: 60px;
-      position: relative;
-    }
+    .cta-section { margin:0 60px 100px; background:linear-gradient(135deg,rgba(0,174,239,0.09) 0%,rgba(0,229,160,0.05) 100%); border:1px solid rgba(0,174,239,0.18); border-radius:30px; padding:80px 60px; text-align:center; position:relative; overflow:hidden; }
+    .cta-section::before { content:''; position:absolute; top:0; left:50%; transform:translateX(-50%); width:55%; height:1px; background:linear-gradient(90deg,transparent,var(--sky),transparent); }
+    .cta-section h2 { font-family:var(--font-display); font-size:clamp(28px,4vw,54px); font-weight:700; letter-spacing:-1.5px; margin-bottom:14px; }
+    .cta-section p { font-size:16px; font-weight:400; color:var(--muted); margin-bottom:36px; }
 
-    .preview-label-wrap { text-align: center; margin-bottom: 60px; }
+    footer { border-top:1px solid var(--border); padding:36px 60px; display:flex; align-items:center; justify-content:space-between; font-size:13px; color:var(--muted); }
+    .footer-logo { font-family:var(--font-display); font-weight:700; font-size:17px; background:linear-gradient(135deg,#fff,var(--sky)); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .footer-links { display:flex; gap:26px; }
+    .footer-links a { color:var(--muted); text-decoration:none; font-weight:500; transition:color 0.2s; }
+    .footer-links a:hover { color:var(--text); }
 
-    .preview-shell {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      overflow: hidden;
-      max-width: 1000px;
-      margin: 0 auto;
-      box-shadow: 0 40px 80px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.04);
-    }
+    ::-webkit-scrollbar { width:5px; }
+    ::-webkit-scrollbar-track { background:var(--bg); }
+    ::-webkit-scrollbar-thumb { background:rgba(0,174,239,0.28); border-radius:3px; }
 
-    /* window chrome */
-    .window-bar {
-      background: var(--surface2);
-      border-bottom: 1px solid var(--border);
-      padding: 14px 20px;
-      display: flex; align-items: center; gap: 12px;
-    }
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot-r { background: #ff5f56; }
-    .dot-y { background: #ffbd2e; }
-    .dot-g { background: #27c93f; }
-    .win-title {
-      flex: 1; text-align: center;
-      font-size: 13px; color: var(--muted);
-      font-family: 'DM Sans', sans-serif;
-    }
-
-    /* mock dashboard */
-    .mock-dash {
-      display: flex; height: 460px;
-    }
-
-    .mock-sidebar {
-      width: 210px;
-      background: rgba(0,0,0,0.3);
-      border-right: 1px solid var(--border);
-      padding: 24px 16px;
-      display: flex; flex-direction: column; gap: 4px;
-    }
-
-    .mock-logo {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800;
-      font-size: 18px;
-      color: var(--sky);
-      padding: 0 8px;
-      margin-bottom: 24px;
-    }
-
-    .mock-nav-item {
-      display: flex; align-items: center; gap: 10px;
-      padding: 9px 10px;
-      border-radius: 10px;
-      font-size: 13px;
-      color: var(--muted);
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-    .mock-nav-item:hover, .mock-nav-item.active {
-      background: rgba(0,174,239,0.12);
-      color: var(--sky);
-    }
-    .mock-nav-item .icon { font-size: 16px; }
-
-    .mock-storage {
-      margin-top: auto;
-      background: rgba(0,174,239,0.07);
-      border: 1px solid rgba(0,174,239,0.2);
-      border-radius: 12px;
-      padding: 14px;
-    }
-    .storage-bar-bg {
-      width: 100%; height: 4px;
-      background: rgba(255,255,255,0.1);
-      border-radius: 2px;
-      margin: 8px 0;
-      overflow: hidden;
-    }
-    .storage-bar-fill {
-      height: 100%;
-      width: 38%;
-      background: linear-gradient(90deg, var(--sky), var(--green));
-      border-radius: 2px;
-    }
-    .storage-text { font-size: 11px; color: var(--muted); }
-
-    .mock-main {
-      flex: 1; padding: 24px;
-      display: flex; flex-direction: column; gap: 20px;
-      overflow: hidden;
-    }
-
-    .mock-topbar {
-      display: flex; align-items: center; gap: 12px;
-    }
-    .mock-search {
-      flex: 1;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      height: 36px;
-      display: flex; align-items: center; padding: 0 14px;
-      gap: 8px;
-      font-size: 13px; color: var(--muted);
-    }
-    .mock-avatar {
-      width: 34px; height: 34px; border-radius: 50%;
-      background: linear-gradient(135deg, var(--sky), var(--green));
-      display: flex; align-items: center; justify-content: center;
-      font-size: 13px; font-weight: 700; color: #06090f;
-    }
-
-    .mock-section-title {
-      font-family: 'Syne', sans-serif;
-      font-size: 16px; font-weight: 700;
-      margin-bottom: 4px;
-    }
-
-    .mock-files-grid {
-      display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;
-    }
-    .mock-file {
-      background: var(--surface2);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 14px 12px;
-      display: flex; flex-direction: column; align-items: center; gap: 8px;
-      font-size: 11px; color: var(--muted);
-      text-align: center;
-      transition: all 0.2s; cursor: pointer;
-    }
-    .mock-file:hover {
-      border-color: rgba(0,174,239,0.3);
-      background: rgba(0,174,239,0.06);
-    }
-    .mock-file-icon { font-size: 28px; }
-    .mock-file-name { font-size: 11px; color: var(--text); font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; width: 100%; text-align: center; }
-
-    .mock-upload-btn {
-      background: var(--sky);
-      color: #06090f;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 20px;
-      font-family: 'DM Sans', sans-serif;
-      font-weight: 600;
-      font-size: 13px;
-      cursor: pointer;
-      display: flex; align-items: center; gap: 6px;
-    }
-
-    /* ─── PRICING ─── */
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 60px;
-    }
-    .pricing-card {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 24px;
-      padding: 36px;
-      position: relative;
-      transition: transform 0.3s;
-    }
-    .pricing-card:hover { transform: translateY(-4px); }
-    .pricing-card.featured {
-      border-color: var(--sky);
-      background: linear-gradient(160deg, rgba(0,174,239,0.07) 0%, var(--surface) 60%);
-    }
-    .featured-badge {
-      position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
-      background: var(--sky); color: #06090f;
-      font-size: 11px; font-weight: 700;
-      padding: 4px 16px; border-radius: 999px;
-      letter-spacing: 0.06em; text-transform: uppercase;
-    }
-    .plan-name {
-      font-family: 'Syne', sans-serif;
-      font-size: 20px; font-weight: 700;
-      margin-bottom: 8px;
-    }
-    .plan-price {
-      font-family: 'Syne', sans-serif;
-      font-size: 42px; font-weight: 800;
-      background: linear-gradient(135deg, #fff, var(--sky));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .plan-price span { font-size: 18px; font-weight: 400; color: var(--muted); -webkit-text-fill-color: var(--muted); }
-    .plan-desc { font-size: 14px; color: var(--muted); margin: 12px 0 24px; line-height: 1.6; }
-    .plan-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
-    .plan-features li { font-size: 14px; color: var(--muted); display: flex; align-items: center; gap: 8px; }
-    .plan-features li::before { content: '✓'; color: var(--sky); font-weight: 700; }
-
-    /* ─── CTA SECTION ─── */
-    .cta-section {
-      margin: 0 60px 100px;
-      background: linear-gradient(135deg, rgba(0,174,239,0.1) 0%, rgba(0,229,160,0.06) 100%);
-      border: 1px solid rgba(0,174,239,0.2);
-      border-radius: 32px;
-      padding: 80px 60px;
-      text-align: center;
-      position: relative;
-      overflow: hidden;
-    }
-    .cta-section::before {
-      content: '';
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 60%; height: 1px;
-      background: linear-gradient(90deg, transparent, var(--sky), transparent);
-    }
-    .cta-section h2 {
-      font-family: 'Syne', sans-serif;
-      font-size: clamp(28px, 4vw, 52px);
-      font-weight: 800; letter-spacing: -1.5px;
-      margin-bottom: 16px;
-    }
-    .cta-section p { font-size: 16px; color: var(--muted); margin-bottom: 36px; }
-
-    /* ─── FOOTER ─── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 60px;
-      display: flex; align-items: center; justify-content: space-between;
-      font-size: 13px; color: var(--muted);
-    }
-    .footer-logo {
-      font-family: 'Syne', sans-serif;
-      font-weight: 800; font-size: 18px;
-      background: linear-gradient(135deg, #fff, var(--sky));
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-    .footer-links { display: flex; gap: 28px; }
-    .footer-links a { color: var(--muted); text-decoration: none; transition: color 0.2s; }
-    .footer-links a:hover { color: var(--text); }
-
-    /* scrollbar */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: var(--bg); }
-    ::-webkit-scrollbar-thumb { background: rgba(0,174,239,0.3); border-radius: 3px; }
-
-    @media(max-width: 768px) {
-      nav { padding: 16px 24px; }
-      .nav-links { display: none; }
-      .section { padding: 60px 24px; }
-      .features-grid, .pricing-grid { grid-template-columns: 1fr; }
-      .stats-row { gap: 30px; flex-wrap: wrap; justify-content: center; }
-      .cta-section { margin: 0 24px 60px; padding: 50px 28px; }
-      footer { flex-direction: column; gap: 20px; text-align: center; }
-      .preview-section { padding: 40px 24px; }
-      .mock-sidebar { display: none; }
-      .mock-files-grid { grid-template-columns: repeat(2,1fr); }
+    @media(max-width:768px){
+      nav{padding:14px 20px;} .nav-links{display:none;}
+      .section{padding:60px 20px;}
+      .features-grid,.pricing-grid{grid-template-columns:1fr;}
+      .stats-row{gap:28px;flex-wrap:wrap;justify-content:center;}
+      .cta-section{margin:0 20px 60px;padding:50px 24px;}
+      .preview-section{padding:30px 20px 60px;}
+      .mock-sidebar{display:none;}
+      .mock-files-grid{grid-template-columns:repeat(2,1fr);}
+      footer{flex-direction:column;gap:18px;text-align:center;}
+      #intro-canvas{width:320px;height:200px;}
     }
   </style>
 </head>
 <body>
 
-<!-- ─── INTRO ─── -->
+<!-- ══════════════════════════════════════════
+     INTRO — S + E PUZZLE SNAP → CLOUD
+     
+     Concept:
+     The S-piece is a bold italic geometric block.
+     Its RIGHT edge has 3 triangular NOTCHES (cuts inward ◁).
+     
+     The E-piece is a bold italic geometric block.
+     Its LEFT edge has 3 triangular TEETH (protrude leftward ◁).
+     
+     Teeth match notches perfectly.
+     They fly in → teeth slot into notches → SNAP flash → morph to cloud.
+══════════════════════════════════════════ -->
 <div id="intro">
-  <div id="intro-svg-wrap">
-    <svg id="intro-svg" viewBox="0 0 340 220" xmlns="http://www.w3.org/2000/svg">
 
-      <!-- ── S piece: left half of the cloud shape ── -->
-      <g id="pieces-group">
-        <g id="piece-s">
-          <!-- S letterform built from the left cloud hemisphere -->
-          <!-- Outer stroke outline of S, shaped to mirror the left cloud bump -->
-          <text
-            x="85" y="162"
-            font-family="'Syne', sans-serif"
-            font-weight="800"
-            font-size="148"
-            fill="none"
-            stroke="#00AEEF"
-            stroke-width="2"
-            text-anchor="middle"
-            letter-spacing="-8"
-          >S</text>
-          <!-- Connector nub on the right edge of S (puzzle tab) -->
-          <circle cx="130" cy="108" r="9" fill="none" stroke="#00AEEF" stroke-width="2" opacity="0.6"/>
-        </g>
-
-        <g id="piece-e">
-          <!-- E letterform on the right -->
-          <text
-            x="255" y="162"
-            font-family="'Syne', sans-serif"
-            font-weight="800"
-            font-size="148"
-            fill="none"
-            stroke="#00AEEF"
-            stroke-width="2"
-            text-anchor="middle"
-            letter-spacing="-8"
-          >E</text>
-          <!-- Connector socket on the left edge of E (puzzle socket) -->
-          <circle cx="210" cy="108" r="9" fill="none" stroke="#00AEEF" stroke-width="2" opacity="0.6"/>
-        </g>
-
-        <!-- Joint glow dot — lights up on snap -->
-        <circle id="snap-dot" cx="170" cy="108" r="5" fill="#00AEEF" opacity="0"/>
-      </g>
-
-      <!-- ── CLOUD (revealed after morph) ── -->
-      <g id="cloud-final">
-        <!-- Cloud fill -->
-        <path id="cloud-fill"
-          d="M260,160 H90
-             A48,48,0,0,1,72,68
-             A30,30,0,0,1,102,44
-             A55,55,0,0,1,208,44
-             A38,38,0,0,1,240,72
-             A48,48,0,0,1,260,160 Z"
-          fill="#00AEEF" opacity="0.1"
-          stroke="none"
-        />
-        <!-- Cloud border (drawn on) -->
-        <path id="cloud-border"
-          d="M260,160 H90
-             A48,48,0,0,1,72,68
-             A30,30,0,0,1,102,44
-             A55,55,0,0,1,208,44
-             A38,38,0,0,1,240,72
-             A48,48,0,0,1,260,160 Z"
-          fill="none"
-          stroke="#00AEEF"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <!-- SE monogram inside cloud -->
-        <text id="cloud-label"
-          x="170" y="128"
-          font-family="'Syne', sans-serif"
-          font-weight="800"
-          font-size="38"
-          fill="#00AEEF"
-          text-anchor="middle"
-          opacity="0"
-          letter-spacing="-1"
-        >SE</text>
-      </g>
-    </svg>
-  </div>
+  <svg id="intro-canvas" viewBox="0 0 380 220" xmlns="http://www.w3.org/2000/svg">
+    <g id="cloud-group">
+      <path id="cloud-fill"
+        d="M310,182 H88
+           A58,58,0,0,1,70,68
+           A34,34,0,0,1,106,42
+           A66,66,0,0,1,236,36
+           A46,46,0,0,1,288,68
+           A53,53,0,0,1,310,182 Z"
+        fill="#00AEEF" opacity="0.08"
+      />
+      <path id="cloud-outline"
+        d="M310,182 H88
+           A58,58,0,0,1,70,68
+           A34,34,0,0,1,106,42
+           A66,66,0,0,1,236,36
+           A46,46,0,0,1,288,68
+           A53,53,0,0,1,310,182 Z"
+        fill="none"
+        stroke="#00AEEF"
+        stroke-width="2.5"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+      />
+      <text id="cloud-se"
+        x="192" y="142"
+        font-family="'Clash Display','Syne',sans-serif"
+        font-weight="700"
+        font-size="74"
+        font-style="italic"
+        fill="#00AEEF"
+        text-anchor="middle"
+        letter-spacing="-3"
+        opacity="0"
+      >SE</text>
+    </g>
+  </svg>
 
   <div id="intro-tagline">Cloud Storage, Reimagined</div>
+  <div id="load-wrap"><div id="load-bar"></div></div>
 
-  <div id="load-bar-wrap">
-    <div id="load-bar"></div>
-  </div>
 </div>
 
-<!-- ─── MAIN SITE ─── -->
+
+<!-- ══════════════════════════════════════════
+     MAIN SITE
+══════════════════════════════════════════ -->
 <div id="site">
-  <!-- NAV -->
   <nav>
     <div class="nav-logo">Storedge</div>
     <ul class="nav-links">
@@ -784,10 +368,9 @@
     </div>
   </nav>
 
-  <!-- HERO -->
   <section class="hero">
     <div class="hero-badge"><span></span>Now in Public Beta</div>
-    <h1>Your files.<br/><span class="gradient-text">Anywhere. Always.</span></h1>
+    <h1>Your files.<br/><span class="g">Anywhere. Always.</span></h1>
     <p class="hero-sub">Storedge is a next-gen cloud storage platform — lightning-fast uploads, smart organization, and end-to-end encryption. Built for the modern internet.</p>
     <div class="hero-ctas">
       <a href="signup.html" class="btn btn-primary btn-xl">Start free ↗</a>
@@ -801,20 +384,19 @@
     </div>
   </section>
 
-  <!-- FEATURES -->
   <div id="features" class="section">
     <div class="section-label">Why Storedge</div>
     <div class="section-title">Built different. Designed to last.</div>
     <div class="features-grid">
       <div class="feature-card">
-        <div class="feature-icon" style="background:rgba(0,174,239,0.12);">⚡</div>
+        <div class="feature-icon" style="background:rgba(0,174,239,0.1);">⚡</div>
         <h3>Instant Uploads</h3>
         <p>Chunked, parallel uploads with auto-retry. Even massive files land in seconds, not minutes.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:rgba(0,229,160,0.1);">🔐</div>
-        <h3>Zero-Knowledge Encryption</h3>
-        <p>Files encrypted before they leave your device. Not even we can see your data.</p>
+        <h3>AES-256 Encryption</h3>
+        <p>Files encrypted at rest before hitting storage. Your data stays yours — always.</p>
       </div>
       <div class="feature-card">
         <div class="feature-icon" style="background:rgba(255,77,255,0.1);">🔗</div>
@@ -827,7 +409,7 @@
         <p>AI-assisted organization that auto-tags and sorts your files so you never lose anything.</p>
       </div>
       <div class="feature-card">
-        <div class="feature-icon" style="background:rgba(0,174,239,0.12);">📡</div>
+        <div class="feature-icon" style="background:rgba(0,174,239,0.1);">📡</div>
         <h3>Realtime Sync</h3>
         <p>Changes sync instantly across all your devices. Desktop, mobile, web — always in sync.</p>
       </div>
@@ -839,17 +421,14 @@
     </div>
   </div>
 
-  <!-- DASHBOARD PREVIEW -->
   <div id="preview" class="preview-section">
     <div class="preview-label-wrap">
       <div class="section-label" style="text-align:center">Product Preview</div>
-      <div class="section-title" style="max-width:100%;text-align:center;margin:0 auto">A dashboard that doesn't suck.</div>
+      <div class="section-title" style="max-width:100%;text-align:center;margin:0 auto;font-family:var(--font-display)">A dashboard that doesn't suck.</div>
     </div>
     <div class="preview-shell">
       <div class="window-bar">
-        <div class="dot dot-r"></div>
-        <div class="dot dot-y"></div>
-        <div class="dot dot-g"></div>
+        <div class="dot dot-r"></div><div class="dot dot-y"></div><div class="dot dot-g"></div>
         <div class="win-title">storedge.app/dashboard</div>
       </div>
       <div class="mock-dash">
@@ -872,9 +451,7 @@
             <button class="mock-upload-btn">↑ Upload</button>
             <div class="mock-avatar">A</div>
           </div>
-          <div>
-            <div class="mock-section-title">Recent Files</div>
-          </div>
+          <div><div class="mock-section-title">Recent Files</div></div>
           <div class="mock-files-grid">
             <div class="mock-file"><div class="mock-file-icon">📄</div><div class="mock-file-name">resume_v4.pdf</div><div>2.1 MB</div></div>
             <div class="mock-file"><div class="mock-file-icon">🖼️</div><div class="mock-file-name">banner_final.png</div><div>4.8 MB</div></div>
@@ -890,7 +467,6 @@
     </div>
   </div>
 
-  <!-- PRICING -->
   <div id="pricing" class="section">
     <div class="section-label">Pricing</div>
     <div class="section-title">Simple, transparent pricing.</div>
@@ -900,10 +476,7 @@
         <div class="plan-price">₹0<span>/mo</span></div>
         <div class="plan-desc">Perfect for individuals getting started with cloud storage.</div>
         <ul class="plan-features">
-          <li>5 GB storage</li>
-          <li>Basic file sharing</li>
-          <li>Web access</li>
-          <li>2 devices</li>
+          <li>5 GB storage</li><li>Basic file sharing</li><li>Web access</li><li>2 devices</li>
         </ul>
         <a href="signup.html" class="btn btn-ghost" style="width:100%;justify-content:center">Get started</a>
       </div>
@@ -913,11 +486,7 @@
         <div class="plan-price">₹299<span>/mo</span></div>
         <div class="plan-desc">For creators, students, and professionals who need more power.</div>
         <ul class="plan-features">
-          <li>100 GB storage</li>
-          <li>Smart folders + AI tags</li>
-          <li>Password-protected links</li>
-          <li>Unlimited devices</li>
-          <li>Priority support</li>
+          <li>100 GB storage</li><li>Smart folders + AI tags</li><li>Password-protected links</li><li>Unlimited devices</li><li>Priority support</li>
         </ul>
         <a href="signup.html" class="btn btn-primary" style="width:100%;justify-content:center">Start Pro →</a>
       </div>
@@ -926,95 +495,71 @@
         <div class="plan-price">₹799<span>/mo</span></div>
         <div class="plan-desc">For small teams who collaborate and need enterprise-grade control.</div>
         <ul class="plan-features">
-          <li>1 TB shared storage</li>
-          <li>Team workspaces</li>
-          <li>Admin dashboard</li>
-          <li>API access</li>
-          <li>SSO & 2FA</li>
-          <li>SLA guarantee</li>
+          <li>1 TB shared storage</li><li>Team workspaces</li><li>Admin dashboard</li><li>API access</li><li>SSO & 2FA</li><li>SLA guarantee</li>
         </ul>
         <a href="signup.html" class="btn btn-ghost" style="width:100%;justify-content:center">Contact sales</a>
       </div>
     </div>
   </div>
 
-  <!-- CTA -->
   <div class="cta-section">
     <h2>Your cloud. <span style="background:linear-gradient(135deg,var(--sky),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent">Zero limits.</span></h2>
     <p>Join thousands of users who've already made the switch. Free forever, upgrade anytime.</p>
     <a href="signup.html" class="btn btn-primary btn-xl">Create free account →</a>
   </div>
 
-  <!-- FOOTER -->
   <footer>
     <div class="footer-logo">Storedge</div>
     <div class="footer-links">
-      <a href="#">Privacy</a>
-      <a href="#">Terms</a>
-      <a href="#">API Docs</a>
-      <a href="#">Status</a>
-      <a href="#">GitHub</a>
+      <a href="#">Privacy</a><a href="#">Terms</a><a href="#">API Docs</a><a href="#">Status</a><a href="#">GitHub</a>
     </div>
     <div>© 2025 Storedge Inc.</div>
   </footer>
 </div>
 
 <script>
-  // ─── INTRO ANIMATION SEQUENCE ───
-  window.addEventListener('DOMContentLoaded', () => {
-    const piecesGroup = document.getElementById('pieces-group');
-    const snapDot     = document.getElementById('snap-dot');
-    const cloudFinal  = document.getElementById('cloud-final');
-    const cloudBorder = document.getElementById('cloud-border');
-    const cloudLabel  = document.getElementById('cloud-label');
-    const tagline     = document.getElementById('intro-tagline');
-    const loadBarWrap = document.getElementById('load-bar-wrap');
-    const loadBar     = document.getElementById('load-bar');
-    const intro       = document.getElementById('intro');
-    const site        = document.getElementById('site');
+window.addEventListener('DOMContentLoaded', () => {
+  const cloudGroup   = document.getElementById('cloud-group');
+  const cloudOutline = document.getElementById('cloud-outline');
+  const cloudSe      = document.getElementById('cloud-se');
+  const tagline      = document.getElementById('intro-tagline');
+  const loadWrap     = document.getElementById('load-wrap');
+  const loadBar      = document.getElementById('load-bar');
+  const intro        = document.getElementById('intro');
+  const site         = document.getElementById('site');
 
-    document.body.style.overflow = 'hidden';
+  document.body.style.overflow = 'hidden';
 
-    // Step 1 (0.3s): Letters already slide in via CSS animation-delay
-    // Step 2 (1.3s): Snap dot flash — letters lock together
+  // Phase 1 (0.2s): Cloud morphs in — scale+rotate entrance
+  setTimeout(() => {
+    cloudGroup.classList.add('appear');
+    cloudOutline.classList.add('draw');
+    setTimeout(() => { cloudOutline.classList.add('glow'); }, 700);
+  }, 200);
+
+  // Phase 2 (1.8s): SE monogram fades in
+  setTimeout(() => {
+    cloudSe.style.transition = 'opacity 0.8s ease';
+    cloudSe.style.opacity    = '0.3';
+  }, 1800);
+
+  // Phase 3 (2.3s): Tagline rises + loading bar fills
+  setTimeout(() => {
+    tagline.classList.add('show');
+    loadWrap.classList.add('show');
+    setTimeout(() => { loadBar.classList.add('fill'); }, 60);
+  }, 2300);
+
+  // Phase 4 (4.8s): Exit to site
+  setTimeout(() => {
+    intro.classList.add('exit');
+    site.classList.add('visible');
     setTimeout(() => {
-      document.getElementById('piece-s').classList.add('locked');
-      document.getElementById('piece-e').classList.add('locked');
-      snapDot.style.transition = 'opacity 0.15s ease';
-      snapDot.style.opacity = '1';
-      setTimeout(() => { snapDot.style.opacity = '0'; }, 300);
-    }, 1400);
-
-    // Step 3 (1.9s): Letters fade out, cloud morphs in
-    setTimeout(() => {
-      piecesGroup.classList.add('fade');
-    }, 1900);
-
-    setTimeout(() => {
-      cloudFinal.classList.add('morph');
-      cloudBorder.classList.add('draw');
-      setTimeout(() => { cloudBorder.classList.add('glow'); }, 400);
-    }, 2100);
-
-    // Step 4 (2.8s): SE label fades in inside cloud + tagline
-    setTimeout(() => {
-      cloudLabel.style.transition = 'opacity 0.5s ease';
-      cloudLabel.style.opacity = '0.35';
-      tagline.classList.add('show');
-      loadBarWrap.classList.add('show');
-      setTimeout(() => { loadBar.classList.add('fill'); }, 80);
-    }, 2800);
-
-    // Step 5 (5s): Exit
-    setTimeout(() => {
-      intro.classList.add('exit');
-      site.classList.add('visible');
-      setTimeout(() => {
-        intro.style.display = 'none';
-        document.body.style.overflow = '';
-      }, 700);
-    }, 5000);
-  });
+      intro.style.display = 'none';
+      document.body.style.overflow = '';
+    }, 700);
+  }, 4800);
+});
 </script>
 </body>
 </html>
