@@ -60,7 +60,7 @@
         <div class="plan-opt" onclick="sel(this)"><strong>Team</strong><span class="badge">1 TB</span></div>
       </div>
       <p class="terms">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
-      <button class="btn-submit" onclick="window.location='dashboard.html'">Create account →</button>
+      <button class="btn-submit" onclick="signup()">Create account →</button>
     </form>
     <div class="divider">or</div>
     <button class="btn-google">
@@ -70,6 +70,7 @@
   </div>
   <script>
     function sel(el){document.querySelectorAll('.plan-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');}
+    <script src="js/auth.js">
   </script>
 </body>
 </html>
