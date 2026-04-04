@@ -4,220 +4,356 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Dashboard — Storedge</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet"/>
   <style>
-    :root{--sky:#00AEEF;--sky-glow:rgba(0,174,239,0.4);--green:#00e5a0;--pink:#ff4dff;--bg:#06090f;--surface:#0d1320;--surface2:#121929;--border:rgba(255,255,255,0.07);--text:#e8edf5;--muted:rgba(232,237,245,0.45);}
+    :root{
+      --sky:#00AEEF; --sky-glow:rgba(0,174,239,0.4); --green:#00e5a0;
+      --bg:#06090f; --surface:#0c1219; --surface2:#111b26; --border:rgba(255,255,255,0.07);
+      --text:#dde6f0; --muted:rgba(221,230,240,0.42);
+      --font-display:'Clash Display','Syne',sans-serif;
+      --font-body:'Plus Jakarta Sans',sans-serif;
+    }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;height:100vh;display:flex;overflow:hidden;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);height:100vh;display:flex;overflow:hidden;}
 
     /* ── SIDEBAR ── */
-    .sidebar{width:240px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:24px 16px;flex-shrink:0;}
-    .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:20px;background:linear-gradient(135deg,#fff,var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:0 8px;margin-bottom:32px;}
-    .nav-group{margin-bottom:8px;}
-    .nav-label{font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);padding:0 10px;margin-bottom:8px;}
-    .nav-item{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:10px;font-size:14px;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none;}
+    .sidebar{width:230px;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:22px 14px;flex-shrink:0;}
+    .logo{font-family:var(--font-display);font-weight:700;font-size:19px;background:linear-gradient(135deg,#fff,var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;padding:0 8px;margin-bottom:28px;}
+    .nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:10px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;text-decoration:none;}
     .nav-item:hover{background:rgba(255,255,255,0.04);color:var(--text);}
-    .nav-item.active{background:rgba(0,174,239,0.12);color:var(--sky);}
-    .nav-item .ico{width:20px;text-align:center;font-size:15px;}
-    .storage-box{margin-top:auto;background:rgba(0,174,239,0.07);border:1px solid rgba(0,174,239,0.18);border-radius:14px;padding:16px;}
+    .nav-item.active{background:rgba(0,174,239,0.1);color:var(--sky);}
+    .nav-item .ico{width:18px;text-align:center;font-size:14px;}
+    .nav-section{font-size:10px;font-weight:600;letter-spacing:0.1em;text-transform:uppercase;color:rgba(255,255,255,0.2);padding:0 10px;margin:16px 0 6px;}
+
+    /* storage widget */
+    .storage-box{margin-top:auto;background:rgba(0,174,239,0.07);border:1px solid rgba(0,174,239,0.18);border-radius:14px;padding:14px;}
     .sto-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
-    .sto-title{font-size:13px;font-weight:600;}
-    .sto-badge{font-size:10px;background:rgba(0,174,239,0.15);color:var(--sky);padding:2px 8px;border-radius:99px;}
+    .sto-title{font-size:12px;font-weight:600;}
+    .sto-badge{font-size:10px;font-weight:600;background:rgba(0,174,239,0.15);color:var(--sky);padding:2px 8px;border-radius:99px;letter-spacing:0.04em;}
     .sto-bar-bg{height:4px;background:rgba(255,255,255,0.08);border-radius:2px;overflow:hidden;margin-bottom:8px;}
-    .sto-bar-fill{height:100%;width:38%;background:linear-gradient(90deg,var(--sky),var(--green));border-radius:2px;}
+    .sto-bar-fill{height:100%;background:linear-gradient(90deg,var(--sky),var(--green));border-radius:2px;transition:width 0.8s ease;}
     .sto-text{font-size:11px;color:var(--muted);}
-    .upgrade-btn{width:100%;margin-top:12px;padding:9px;background:var(--sky);border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:600;color:#06090f;cursor:pointer;transition:all 0.2s;}
-    .upgrade-btn:hover{box-shadow:0 0 16px var(--sky-glow);}
+    .upgrade-btn{width:100%;margin-top:10px;padding:8px;background:var(--sky);border:none;border-radius:9px;font-family:var(--font-body);font-size:12px;font-weight:600;color:#06090f;cursor:pointer;transition:all 0.2s;}
+    .upgrade-btn:hover{box-shadow:0 0 14px var(--sky-glow);}
 
     /* ── MAIN ── */
     .main{flex:1;display:flex;flex-direction:column;overflow:hidden;}
 
-    /* topbar */
-    .topbar{border-bottom:1px solid var(--border);padding:16px 28px;display:flex;align-items:center;gap:14px;background:var(--surface);flex-shrink:0;}
+    .topbar{border-bottom:1px solid var(--border);padding:14px 26px;display:flex;align-items:center;gap:12px;background:var(--surface);flex-shrink:0;}
     .search-wrap{flex:1;position:relative;}
-    .search-icon{position:absolute;left:13px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:15px;}
-    .search-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:10px 16px 10px 38px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;transition:border-color 0.2s;}
+    .search-ico{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-size:14px;}
+    .search-input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:9px 14px 9px 36px;font-family:var(--font-body);font-size:13px;color:var(--text);outline:none;transition:border-color 0.2s;}
     .search-input::placeholder{color:var(--muted);}
-    .search-input:focus{border-color:rgba(0,174,239,0.4);}
-    .topbar-actions{display:flex;align-items:center;gap:10px;}
-    .icon-btn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,0.04);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:15px;transition:all 0.2s;color:var(--muted);}
-    .icon-btn:hover{border-color:var(--sky);color:var(--sky);}
-    .avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--green));display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#06090f;cursor:pointer;}
+    .search-input:focus{border-color:rgba(0,174,239,0.35);}
+    .avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--sky),var(--green));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#06090f;cursor:pointer;flex-shrink:0;}
+    .user-name{font-size:13px;font-weight:500;color:var(--muted);}
 
-    /* content */
-    .content{flex:1;overflow-y:auto;padding:28px;}
+    .content{flex:1;overflow-y:auto;padding:24px;}
     .content::-webkit-scrollbar{width:4px;}
-    .content::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.08);border-radius:2px;}
+    .content::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.07);border-radius:2px;}
 
     /* quick stats */
-    .quick-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:28px;}
-    .qs-card{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;transition:transform 0.2s;}
-    .qs-card:hover{transform:translateY(-2px);}
-    .qs-icon{font-size:24px;margin-bottom:12px;}
-    .qs-val{font-family:'Syne',sans-serif;font-size:22px;font-weight:800;}
-    .qs-label{font-size:12px;color:var(--muted);margin-top:3px;}
-
-    /* section header */
-    .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;}
-    .sec-title{font-family:'Syne',sans-serif;font-size:17px;font-weight:700;}
-    .view-toggle{display:flex;gap:4px;}
-    .vt-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:transparent;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:13px;color:var(--muted);transition:all 0.2s;}
-    .vt-btn.active,.vt-btn:hover{background:rgba(0,174,239,0.12);border-color:rgba(0,174,239,0.3);color:var(--sky);}
+    .stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px;}
+    .stat-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px;transition:transform 0.2s;}
+    .stat-card:hover{transform:translateY(-2px);}
+    .stat-icon{font-size:22px;margin-bottom:10px;}
+    .stat-val{font-family:var(--font-display);font-size:20px;font-weight:700;}
+    .stat-label{font-size:11px;font-weight:500;color:var(--muted);margin-top:3px;letter-spacing:0.04em;text-transform:uppercase;}
 
     /* upload zone */
-    .upload-zone{border:2px dashed rgba(0,174,239,0.25);border-radius:16px;padding:28px;text-align:center;margin-bottom:28px;cursor:pointer;transition:all 0.2s;background:rgba(0,174,239,0.03);}
-    .upload-zone:hover{border-color:var(--sky);background:rgba(0,174,239,0.07);}
-    .upload-zone .big-icon{font-size:32px;margin-bottom:10px;}
+    .upload-zone{border:2px dashed rgba(0,174,239,0.22);border-radius:14px;padding:24px;text-align:center;margin-bottom:24px;cursor:pointer;transition:all 0.2s;background:rgba(0,174,239,0.03);}
+    .upload-zone:hover{border-color:var(--sky);background:rgba(0,174,239,0.06);}
+    .upload-zone.drag{border-color:var(--sky);background:rgba(0,174,239,0.1);}
+    .upload-zone .big-ico{font-size:30px;margin-bottom:8px;}
     .upload-zone p{font-size:14px;color:var(--muted);}
     .upload-zone strong{color:var(--sky);}
 
-    /* files grid */
-    .files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px;margin-bottom:28px;}
-    .file-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;gap:8px;cursor:pointer;transition:all 0.2s;position:relative;}
-    .file-card:hover{border-color:rgba(0,174,239,0.35);background:rgba(0,174,239,0.05);transform:translateY(-2px);}
-    .file-card .fi{font-size:32px;}
-    .file-card .fn{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;}
-    .file-card .fs{font-size:11px;color:var(--muted);}
-    .file-menu{position:absolute;top:8px;right:8px;width:22px;height:22px;border-radius:6px;background:rgba(0,0,0,0.4);display:none;align-items:center;justify-content:center;font-size:12px;color:var(--muted);}
-    .file-card:hover .file-menu{display:flex;}
+    /* section header */
+    .sec-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+    .sec-title{font-family:var(--font-display);font-size:15px;font-weight:600;}
 
-    /* recent list */
-    .recent-list{display:flex;flex-direction:column;gap:4px;}
-    .list-item{display:flex;align-items:center;gap:14px;padding:10px 14px;border-radius:12px;transition:background 0.2s;cursor:pointer;}
-    .list-item:hover{background:rgba(255,255,255,0.03);}
-    .li-icon{font-size:20px;flex-shrink:0;}
-    .li-info{flex:1;}
-    .li-name{font-size:14px;font-weight:500;}
-    .li-meta{font-size:12px;color:var(--muted);margin-top:2px;}
-    .li-size{font-size:13px;color:var(--muted);flex-shrink:0;}
-    .li-dot{width:6px;height:6px;border-radius:50%;background:var(--green);flex-shrink:0;}
+    /* files */
+    .files-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:12px;margin-bottom:24px;}
+    .file-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:16px 12px;display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:all 0.2s;}
+    .file-card:hover{border-color:rgba(0,174,239,0.3);background:rgba(0,174,239,0.05);transform:translateY(-2px);}
+    .file-ico{font-size:28px;}
+    .file-name{font-size:11px;font-weight:500;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;width:100%;text-align:center;}
+    .file-size{font-size:11px;color:var(--muted);}
 
-    /* upload button */
-    .upload-fab{position:fixed;bottom:32px;right:32px;background:var(--sky);border:none;border-radius:16px;padding:14px 22px;font-family:'DM Sans',sans-serif;font-size:15px;font-weight:600;color:#06090f;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 8px 30px var(--sky-glow);transition:all 0.25s;z-index:50;}
-    .upload-fab:hover{background:#22c5ff;transform:translateY(-2px);box-shadow:0 12px 40px var(--sky-glow);}
+    /* empty state */
+    .empty-state{text-align:center;padding:48px 24px;color:var(--muted);}
+    .empty-state .empty-ico{font-size:48px;margin-bottom:14px;opacity:0.4;}
+    .empty-state p{font-size:14px;line-height:1.6;}
+
+    /* FAB */
+    .upload-fab{position:fixed;bottom:28px;right:28px;background:var(--sky);border:none;border-radius:14px;padding:13px 20px;font-family:var(--font-body);font-size:14px;font-weight:600;color:#06090f;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 8px 28px var(--sky-glow);transition:all 0.25s;z-index:50;}
+    .upload-fab:hover{background:#22c5ff;transform:translateY(-2px);}
+
+    /* toast */
+    .toast-wrap{position:fixed;top:20px;right:20px;z-index:999;display:flex;flex-direction:column;gap:8px;}
+    .toast{padding:12px 18px;border-radius:12px;font-size:13px;font-weight:500;animation:toastIn 0.3s ease;max-width:300px;}
+    @keyframes toastIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+    .toast.err{background:#1a0808;border:1px solid rgba(255,77,77,0.3);color:#ff8080;}
+    .toast.ok{background:#081a10;border:1px solid rgba(0,229,160,0.25);color:var(--green);}
+
+    @media(max-width:768px){
+      .sidebar{display:none;}
+      .stats-grid{grid-template-columns:repeat(2,1fr);}
+    }
   </style>
 </head>
 <body>
-  <script src="js/auth.js"></script>
-<script>
-  checkAuth();
-</script>
 
-<!-- SIDEBAR -->
 <div class="sidebar">
   <div class="logo">Storedge</div>
-  <div class="nav-group">
-    <div class="nav-label">Main</div>
-    <div class="nav-item active"><span class="ico">🗂️</span> My Files</div>
-    <div class="nav-item"><span class="ico">⭐</span> Starred</div>
-    <div class="nav-item"><span class="ico">🔗</span> Shared with me</div>
-    <div class="nav-item"><span class="ico">🕓</span> Recent</div>
-  </div>
-  <div class="nav-group" style="margin-top:16px">
-    <div class="nav-label">Workspace</div>
-    <div class="nav-item"><span class="ico">📁</span> Projects</div>
-    <div class="nav-item"><span class="ico">🖼️</span> Media</div>
-    <div class="nav-item"><span class="ico">📄</span> Documents</div>
-    <div class="nav-item"><span class="ico">🗑️</span> Trash</div>
-  </div>
-  <div class="nav-group" style="margin-top:16px">
-    <div class="nav-label">Account</div>
-    <div class="nav-item"><span class="ico">⚙️</span> Settings</div>
-    <a href="#" class="nav-item" onclick="logout()">Log out</a>
-  </div>
+  <div class="nav-section">Main</div>
+  <div class="nav-item active"><span class="ico">🗂️</span> My Files</div>
+  <div class="nav-item"><span class="ico">⭐</span> Starred</div>
+  <div class="nav-item"><span class="ico">🔗</span> Shared</div>
+  <div class="nav-item"><span class="ico">🕓</span> Recent</div>
+  <div class="nav-section">Workspace</div>
+  <div class="nav-item"><span class="ico">📁</span> Folders</div>
+  <div class="nav-item"><span class="ico">🖼️</span> Media</div>
+  <div class="nav-item"><span class="ico">📄</span> Documents</div>
+  <div class="nav-item"><span class="ico">🗑️</span> Trash</div>
+  <div class="nav-section">Account</div>
+  <div class="nav-item"><span class="ico">⚙️</span> Settings</div>
+  <div class="nav-item" onclick="logout()"><span class="ico">🚪</span> Log out</div>
+
   <div class="storage-box">
     <div class="sto-head">
       <span class="sto-title">Storage</span>
-      <span class="sto-badge">Pro</span>
+      <span class="sto-badge" id="plan-badge">Free</span>
     </div>
-    <div class="sto-bar-bg"><div class="sto-bar-fill"></div></div>
-    <div class="sto-text">3.8 GB of 100 GB used</div>
+    <div class="sto-bar-bg"><div class="sto-bar-fill" id="sto-fill" style="width:0%"></div></div>
+    <div class="sto-text" id="sto-text">Loading…</div>
     <button class="upgrade-btn">Upgrade plan ↗</button>
   </div>
 </div>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input class="search-input" type="text" placeholder="Search files, folders, people..."/>
+      <span class="search-ico">🔍</span>
+      <input class="search-input" type="text" placeholder="Search files…"/>
     </div>
-    <div class="topbar-actions">
-      <div class="icon-btn" title="Notifications">🔔</div>
-      <div class="icon-btn" title="Grid view">⊞</div>
-      <div class="avatar">A</div>
-    </div>
+    <span class="user-name" id="user-name">…</span>
+    <div class="avatar" id="avatar-init">?</div>
   </div>
 
   <div class="content">
-    <!-- quick stats -->
-    <div class="quick-stats">
-      <div class="qs-card">
-        <div class="qs-icon">📦</div>
-        <div class="qs-val">3.8 GB</div>
-        <div class="qs-label">Total used</div>
-      </div>
-      <div class="qs-card">
-        <div class="qs-icon">📄</div>
-        <div class="qs-val">248</div>
-        <div class="qs-label">Total files</div>
-      </div>
-      <div class="qs-card">
-        <div class="qs-icon">🔗</div>
-        <div class="qs-val">12</div>
-        <div class="qs-label">Shared links</div>
-      </div>
-      <div class="qs-card">
-        <div class="qs-icon">🔄</div>
-        <div class="qs-val">Live</div>
-        <div class="qs-label">Sync status</div>
-      </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-icon">📦</div><div class="stat-val" id="s-used">—</div><div class="stat-label">Used</div></div>
+      <div class="stat-card"><div class="stat-icon">📄</div><div class="stat-val" id="s-files">—</div><div class="stat-label">Files</div></div>
+      <div class="stat-card"><div class="stat-icon">🔗</div><div class="stat-val" id="s-shared">0</div><div class="stat-label">Shared</div></div>
+      <div class="stat-card"><div class="stat-icon">🔄</div><div class="stat-val" style="color:var(--green);font-size:14px;">Live</div><div class="stat-label">Sync</div></div>
     </div>
 
-    <!-- upload zone -->
-    <div class="upload-zone" onclick="alert('Upload dialog would open here — connect to POST /api/files')">
-      <div class="big-icon">☁️</div>
+    <div class="upload-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="big-ico">☁️</div>
       <p><strong>Drag & drop files here</strong> or click to upload</p>
-      <p style="font-size:12px;margin-top:6px">Supports any file type · Max 2GB per file</p>
+      <p style="font-size:12px;margin-top:5px;">Any file type · Max 50 MB per file</p>
     </div>
+    <input type="file" id="file-input" style="display:none" multiple onchange="handleFileSelect(event)"/>
 
-    <!-- recent files grid -->
     <div class="sec-header">
-      <div class="sec-title">Recent Files</div>
-      <div class="view-toggle">
-        <button class="vt-btn active">⊞</button>
-        <button class="vt-btn">☰</button>
-      </div>
+      <div class="sec-title">My Files</div>
     </div>
-    <div class="files-grid">
-      <div class="file-card"><div class="fi">📄</div><div class="fn">resume_v4.pdf</div><div class="fs">2.1 MB</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">🖼️</div><div class="fn">banner_final.png</div><div class="fs">4.8 MB</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">📁</div><div class="fn">Project Assets</div><div class="fs">42 files</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">🎬</div><div class="fn">demo_reel.mp4</div><div class="fs">118 MB</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">📊</div><div class="fn">analytics_q1.xlsx</div><div class="fs">890 KB</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">🗃️</div><div class="fn">archive_2024.zip</div><div class="fs">1.2 GB</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">📝</div><div class="fn">notes_iot.md</div><div class="fs">12 KB</div><div class="file-menu">⋯</div></div>
-      <div class="file-card"><div class="fi">🎵</div><div class="fn">podcast_ep1.mp3</div><div class="fs">48 MB</div><div class="file-menu">⋯</div></div>
+    <div class="files-grid" id="files-grid">
+      <!-- populated by JS -->
     </div>
-
-    <!-- all files list -->
-    <div class="sec-header">
-      <div class="sec-title">All Files</div>
-      <span style="font-size:13px;color:var(--sky);cursor:pointer">View all →</span>
-    </div>
-    <div class="recent-list">
-      <div class="list-item"><span class="li-icon">📄</span><div class="li-info"><div class="li-name">IIT_Dissertation_Draft3.pdf</div><div class="li-meta">Modified 2 hours ago · Shared</div></div><span class="li-size">8.4 MB</span><div class="li-dot"></div></div>
-      <div class="list-item"><span class="li-icon">📁</span><div class="li-info"><div class="li-name">F13_DR_Documentation</div><div class="li-meta">Modified yesterday · 14 files</div></div><span class="li-size">234 MB</span></div>
-      <div class="list-item"><span class="li-icon">🖼️</span><div class="li-info"><div class="li-name">storedge_brand_kit.zip</div><div class="li-meta">Uploaded 3 days ago</div></div><span class="li-size">12 MB</span></div>
-      <div class="list-item"><span class="li-icon">📊</span><div class="li-info"><div class="li-name">AWS_Cost_Analysis_Q1.xlsx</div><div class="li-meta">Uploaded last week</div></div><span class="li-size">1.1 MB</span></div>
-      <div class="list-item"><span class="li-icon">📝</span><div class="li-info"><div class="li-name">railmirror_bug_notes.md</div><div class="li-meta">Uploaded 2 weeks ago</div></div><span class="li-size">4 KB</span></div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <div class="empty-ico">📂</div>
+      <p>No files yet.<br/>Upload something to get started.</p>
     </div>
   </div>
 </div>
 
-<!-- FAB -->
-<button class="upload-fab" onclick="alert('Connect to: POST /api/files/upload')">↑ Upload Files</button>
+<button class="upload-fab" onclick="document.getElementById('file-input').click()">↑ Upload Files</button>
+<div class="toast-wrap" id="toast-wrap"></div>
 
+<script>
+  // ── CONFIG ──────────────────────────────────────────────
+  const API_URL = 'https://storedge-backend.onrender.com';
+  const FREE_STORAGE_BYTES = 2 * 1024 * 1024 * 1024; // 2 GB
+
+  // ── AUTH GUARD ──────────────────────────────────────────
+  const token = localStorage.getItem('storedge_token');
+  if (!token) {
+    window.location.href = 'login.html';
+  }
+
+  // ── TOAST ───────────────────────────────────────────────
+  function toast(msg, type='ok', dur=3500) {
+    const wrap = document.getElementById('toast-wrap');
+    const el = document.createElement('div');
+    el.className = `toast ${type}`;
+    el.textContent = msg;
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), dur);
+  }
+
+  // ── LOGOUT ──────────────────────────────────────────────
+  function logout() {
+    localStorage.removeItem('storedge_token');
+    localStorage.removeItem('storedge_user');
+    window.location.href = 'login.html';
+  }
+
+  // ── FORMAT BYTES ────────────────────────────────────────
+  function fmtBytes(bytes) {
+    if (!bytes || bytes === 0) return '0 B';
+    const k = 1024;
+    const sizes = ['B','KB','MB','GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+  }
+
+  // ── FILE ICON ────────────────────────────────────────────
+  function fileIcon(name) {
+    const ext = name.split('.').pop().toLowerCase();
+    const map = {
+      pdf:'📄', doc:'📝', docx:'📝', txt:'📝', md:'📝',
+      jpg:'🖼️', jpeg:'🖼️', png:'🖼️', gif:'🖼️', webp:'🖼️', svg:'🖼️',
+      mp4:'🎬', mov:'🎬', avi:'🎬', mkv:'🎬',
+      mp3:'🎵', wav:'🎵', flac:'🎵',
+      zip:'🗃️', rar:'🗃️', '7z':'🗃️', tar:'🗃️',
+      xls:'📊', xlsx:'📊', csv:'📊',
+      ppt:'📋', pptx:'📋',
+      js:'💻', ts:'💻', py:'💻', html:'💻', css:'💻', json:'💻',
+    };
+    return map[ext] || '📎';
+  }
+
+  // ── LOAD USER INFO ───────────────────────────────────────
+  async function loadUser() {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/me`, {
+        headers: { Authorization: token }
+      });
+      if (res.status === 401) { logout(); return; }
+      if (!res.ok) return;
+
+      const user = await res.json();
+      localStorage.setItem('storedge_user', JSON.stringify(user));
+      renderUser(user);
+    } catch {
+      // Fallback to cached user
+      const cached = localStorage.getItem('storedge_user');
+      if (cached) renderUser(JSON.parse(cached));
+    }
+  }
+
+  function renderUser(user) {
+    const name = user.name || 'User';
+    document.getElementById('user-name').textContent = name;
+    document.getElementById('avatar-init').textContent = name.charAt(0).toUpperCase();
+
+    // Storage bar
+    const used  = user.storageUsed || 0;
+    const total = FREE_STORAGE_BYTES;
+    const pct   = Math.min((used / total) * 100, 100).toFixed(1);
+    document.getElementById('sto-fill').style.width = pct + '%';
+    document.getElementById('sto-text').textContent = `${fmtBytes(used)} of ${fmtBytes(total)} used`;
+    document.getElementById('s-used').textContent   = fmtBytes(used);
+    document.getElementById('plan-badge').textContent = user.plan || 'Free';
+  }
+
+  // ── LOAD FILES ───────────────────────────────────────────
+  async function loadFiles() {
+    try {
+      const res = await fetch(`${API_URL}/api/files`, {
+        headers: { Authorization: token }
+      });
+      if (res.status === 401) { logout(); return; }
+      if (!res.ok) return;
+
+      const files = await res.json();
+      document.getElementById('s-files').textContent = files.length;
+      renderFiles(files);
+    } catch {
+      document.getElementById('s-files').textContent = '—';
+    }
+  }
+
+  function renderFiles(files) {
+    const grid  = document.getElementById('files-grid');
+    const empty = document.getElementById('empty-state');
+    grid.innerHTML = '';
+
+    if (!files.length) {
+      empty.style.display = 'block';
+      return;
+    }
+    empty.style.display = 'none';
+
+    files.forEach(f => {
+      const card = document.createElement('div');
+      card.className = 'file-card';
+      card.innerHTML = `
+        <div class="file-ico">${fileIcon(f.fileName)}</div>
+        <div class="file-name" title="${f.fileName}">${f.fileName}</div>
+        <div class="file-size">${fmtBytes(f.size)}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  // ── FILE UPLOAD ──────────────────────────────────────────
+  async function uploadFile(file) {
+    const MAX = 50 * 1024 * 1024; // 50 MB
+    if (file.size > MAX) {
+      toast(`${file.name} is too large (max 50 MB)`, 'err'); return;
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    toast(`Uploading ${file.name}…`, 'ok', 8000);
+
+    try {
+      const res = await fetch(`${API_URL}/api/files/upload`, {
+        method: 'POST',
+        headers: { Authorization: token },
+        body: formData
+      });
+
+      if (res.status === 401) { logout(); return; }
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast(data.error || `Failed to upload ${file.name}`, 'err'); return;
+      }
+
+      toast(`${file.name} uploaded ✓`, 'ok');
+      loadFiles();
+      loadUser(); // refresh storage bar
+    } catch {
+      toast(`Upload failed for ${file.name}. Check connection.`, 'err');
+    }
+  }
+
+  function handleFileSelect(e) {
+    Array.from(e.target.files).forEach(uploadFile);
+    e.target.value = ''; // reset so same file can be re-uploaded
+  }
+
+  // ── DRAG & DROP ──────────────────────────────────────────
+  const zone = document.getElementById('drop-zone');
+  zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag'));
+  zone.addEventListener('drop', e => {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    Array.from(e.dataTransfer.files).forEach(uploadFile);
+  });
+
+  // ── INIT ─────────────────────────────────────────────────
+  loadUser();
+  loadFiles();
+</script>
 </body>
 </html>
