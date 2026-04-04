@@ -4,73 +4,249 @@
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
   <title>Sign Up — Storedge</title>
-  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&family=Syne:wght@700;800&display=swap" rel="stylesheet"/>
+  <link href="https://api.fontshare.com/v2/css?f[]=clash-display@600,700&display=swap" rel="stylesheet"/>
   <style>
-    :root{--sky:#00AEEF;--sky-glow:rgba(0,174,239,0.45);--green:#00e5a0;--bg:#06090f;--surface:#0d1320;--border:rgba(255,255,255,0.08);--text:#e8edf5;--muted:rgba(232,237,245,0.45);}
+    :root{
+      --sky:#00AEEF; --sky-glow:rgba(0,174,239,0.4); --green:#00e5a0;
+      --bg:#06090f; --surface:#0c1219; --border:rgba(255,255,255,0.08);
+      --text:#dde6f0; --muted:rgba(221,230,240,0.42);
+      --font-display:'Clash Display','Syne',sans-serif;
+      --font-body:'Plus Jakarta Sans',sans-serif;
+    }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
-    body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;position:relative;overflow:hidden;}
+    body{background:var(--bg);color:var(--text);font-family:var(--font-body);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;overflow:hidden;}
     body::before{content:'';position:fixed;inset:0;background:radial-gradient(ellipse 50% 50% at 30% 20%,rgba(0,174,239,0.08) 0%,transparent 60%),radial-gradient(ellipse 30% 30% at 80% 80%,rgba(0,229,160,0.06) 0%,transparent 60%);pointer-events:none;}
     .grid-bg{position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,0.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.02) 1px,transparent 1px);background-size:50px 50px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 30%,transparent 80%);pointer-events:none;}
-    .card{background:var(--surface);border:1px solid var(--border);border-radius:28px;padding:48px 44px;width:100%;max-width:440px;position:relative;animation:cardIn 0.6s cubic-bezier(0.22,1,0.36,1) both;}
-    @keyframes cardIn{from{opacity:0;transform:translateY(32px)}to{opacity:1;transform:translateY(0)}}
+
+    .card{
+      background:var(--surface);border:1px solid var(--border);border-radius:28px;
+      padding:44px 42px;width:100%;max-width:440px;position:relative;
+      animation:cardIn 0.6s cubic-bezier(0.22,1,0.36,1) both;
+    }
+    @keyframes cardIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:translateY(0)}}
     .card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:50%;height:1px;background:linear-gradient(90deg,transparent,var(--sky),transparent);}
-    .logo{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;background:linear-gradient(135deg,#fff,var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:32px;display:block;text-decoration:none;}
-    h1{font-family:'Syne',sans-serif;font-size:26px;font-weight:800;letter-spacing:-0.5px;margin-bottom:6px;}
-    .sub{font-size:14px;color:var(--muted);margin-bottom:32px;}
-    .sub a{color:var(--sky);text-decoration:none;}
-    .row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
-    label{display:block;font-size:13px;color:var(--muted);margin-bottom:6px;margin-top:20px;}
-    input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:12px;padding:13px 16px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;}
-    input::placeholder{color:rgba(255,255,255,0.2);}
+
+    .logo{font-family:var(--font-display);font-weight:700;font-size:21px;background:linear-gradient(135deg,#fff,var(--sky));-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:28px;display:block;text-decoration:none;}
+    h1{font-family:var(--font-display);font-size:24px;font-weight:700;letter-spacing:-0.4px;margin-bottom:5px;}
+    .sub{font-size:14px;color:var(--muted);margin-bottom:28px;}
+    .sub a{color:var(--sky);text-decoration:none;font-weight:500;}
+
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .field{margin-top:16px;}
+    label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;letter-spacing:0.04em;text-transform:uppercase;}
+    input{
+      width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);
+      border-radius:12px;padding:12px 15px;font-family:var(--font-body);font-size:14px;
+      color:var(--text);outline:none;transition:border-color 0.2s,box-shadow 0.2s;
+    }
+    input::placeholder{color:rgba(255,255,255,0.18);}
     input:focus{border-color:var(--sky);box-shadow:0 0 0 3px rgba(0,174,239,0.1);}
-    .plan-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;margin-top:20px;}
-    .plan-opt{border:1px solid var(--border);border-radius:12px;padding:12px 10px;text-align:center;cursor:pointer;transition:all 0.2s;font-size:13px;}
-    .plan-opt.sel{border-color:var(--sky);background:rgba(0,174,239,0.1);color:var(--sky);}
-    .plan-opt .badge{display:block;font-size:11px;color:var(--muted);margin-top:3px;}
-    .plan-opt.sel .badge{color:rgba(0,174,239,0.7);}
-    .terms{font-size:12px;color:var(--muted);margin-top:16px;line-height:1.6;}
+    input.error{border-color:#ff4d4d;}
+
+    /* free tier badge */
+    .free-badge{
+      margin-top:18px;
+      background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.2);
+      border-radius:12px;padding:12px 16px;
+      display:flex;align-items:center;gap:10px;font-size:13px;
+    }
+    .free-badge .dot{width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;animation:pulse 1.6s ease infinite;}
+    @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.7)}}
+    .free-badge strong{color:var(--green);}
+    .free-badge span{color:var(--muted);}
+
+    .terms{font-size:12px;color:var(--muted);margin-top:14px;line-height:1.6;}
     .terms a{color:var(--sky);text-decoration:none;}
-    .btn-submit{width:100%;margin-top:24px;padding:14px;background:linear-gradient(135deg,var(--sky),var(--green));border:none;border-radius:14px;font-family:'DM Sans',sans-serif;font-size:16px;font-weight:600;color:#06090f;cursor:pointer;transition:all 0.25s;}
-    .btn-submit:hover{box-shadow:0 0 28px var(--sky-glow);filter:brightness(1.1);}
-    .divider{display:flex;align-items:center;gap:16px;margin:24px 0;color:var(--muted);font-size:13px;}
+
+    .btn-submit{
+      width:100%;margin-top:20px;padding:14px;
+      background:linear-gradient(135deg,var(--sky),var(--green));
+      border:none;border-radius:14px;font-family:var(--font-body);
+      font-size:15px;font-weight:600;color:#06090f;cursor:pointer;
+      transition:all 0.25s;display:flex;align-items:center;justify-content:center;gap:8px;
+      position:relative;overflow:hidden;
+    }
+    .btn-submit:hover:not(:disabled){box-shadow:0 0 28px var(--sky-glow);filter:brightness(1.08);}
+    .btn-submit:disabled{opacity:0.6;cursor:not-allowed;filter:none;}
+
+    /* spinner inside button */
+    .spinner{
+      width:18px;height:18px;border:2px solid rgba(6,9,15,0.3);
+      border-top-color:#06090f;border-radius:50%;
+      animation:spin 0.7s linear infinite;display:none;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .btn-submit.loading .btn-text{display:none;}
+    .btn-submit.loading .spinner{display:block;}
+
+    /* error / success toast */
+    .toast{
+      display:none;margin-top:14px;padding:11px 14px;border-radius:10px;
+      font-size:13px;font-weight:500;text-align:center;
+    }
+    .toast.err{background:rgba(255,77,77,0.1);border:1px solid rgba(255,77,77,0.25);color:#ff8080;}
+    .toast.ok{background:rgba(0,229,160,0.08);border:1px solid rgba(0,229,160,0.2);color:var(--green);}
+    .toast.show{display:block;}
+
+    .divider{display:flex;align-items:center;gap:14px;margin:20px 0;color:var(--muted);font-size:13px;}
     .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--border);}
-    .btn-google{width:100%;padding:13px;background:transparent;border:1px solid var(--border);border-radius:14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
-    .btn-google:hover{border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.04);}
+    .btn-google{width:100%;padding:12px;background:transparent;border:1px solid var(--border);border-radius:14px;font-family:var(--font-body);font-size:14px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
+    .btn-google:hover{border-color:rgba(255,255,255,0.18);color:var(--text);}
   </style>
 </head>
 <body>
-  <div class="grid-bg"></div>
-  <div class="card">
-    <a href="index.html" class="logo">Storedge</a>
-    <h1>Create your account ✨</h1>
-    <p class="sub">Already have one? <a href="login.html">Log in →</a></p>
-    <form onsubmit="return false">
-      <div class="row">
-        <div><label>First name</label><input type="text" placeholder="Arnav"/></div>
-        <div><label>Last name</label><input type="text" placeholder="Sharma"/></div>
-      </div>
-      <label>Email address</label>
-      <input type="email" placeholder="you@example.com"/>
-      <label>Password</label>
-      <input type="password" placeholder="Min. 8 characters"/>
-      <label style="margin-bottom:10px">Choose a plan</label>
-      <div class="plan-row" id="plans">
-        <div class="plan-opt" onclick="sel(this)"><strong>Free</strong><span class="badge">5 GB</span></div>
-        <div class="plan-opt sel" onclick="sel(this)"><strong>Pro</strong><span class="badge">100 GB</span></div>
-        <div class="plan-opt" onclick="sel(this)"><strong>Team</strong><span class="badge">1 TB</span></div>
-      </div>
-      <p class="terms">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
-      <button class="btn-submit" onclick="signup()">Create account →</button>
-    </form>
-    <div class="divider">or</div>
-    <button class="btn-google">
-      <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.7 29.2 37 24 37a13 13 0 0 1 0-26c3.1 0 5.9 1.1 8.1 2.9l5.7-5.7A21 21 0 1 0 45 24c0-1.4-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8A13 13 0 0 1 24 11c3.1 0 5.9 1.1 8.1 2.9l5.7-5.7A21 21 0 0 0 6.3 14.7z"/><path fill="#4CAF50" d="M24 45a21 21 0 0 0 14.6-5.9l-6.7-5.5A13 13 0 0 1 24 37a13 13 0 0 1-12.4-9.1l-6.6 5.1A21 21 0 0 0 24 45z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.4-2.5 4.4-4.7 5.6l6.7 5.5C41.7 35.4 45 30.1 45 24c0-1.4-.1-2.7-.4-4z"/></svg>
-      Continue with Google
-    </button>
+<div class="grid-bg"></div>
+<div class="card">
+  <a href="index.html" class="logo">Storedge</a>
+  <h1>Create your account ✨</h1>
+  <p class="sub">Already have one? <a href="login.html">Log in →</a></p>
+
+  <div class="row">
+    <div class="field"><label>First name</label><input id="fname" type="text" placeholder="Arnav" autocomplete="given-name"/></div>
+    <div class="field"><label>Last name</label><input id="lname" type="text" placeholder="Sharma" autocomplete="family-name"/></div>
   </div>
-  <script>
-    function sel(el){document.querySelectorAll('.plan-opt').forEach(e=>e.classList.remove('sel'));el.classList.add('sel');}
-    <script src="js/auth.js">
-  </script>
+  <div class="field"><label>Email address</label><input id="email" type="email" placeholder="you@gmail.com" autocomplete="email"/></div>
+  <div class="field"><label>Password</label><input id="password" type="password" placeholder="Min. 8 characters" autocomplete="new-password"/></div>
+
+  <!-- free tier info instead of plan selector -->
+  <div class="free-badge">
+    <div class="dot"></div>
+    <div><strong>2 GB free</strong> <span>— no credit card required. Upgrade anytime.</span></div>
+  </div>
+
+  <p class="terms">By signing up you agree to our <a href="#">Terms</a> and <a href="#">Privacy Policy</a>.</p>
+
+  <button class="btn-submit" id="signupBtn" onclick="handleSignup()">
+    <span class="btn-text">Create account →</span>
+    <div class="spinner"></div>
+  </button>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="divider">or</div>
+  <button class="btn-google" onclick="showToast('Google sign-in coming soon!','err')">
+    <svg width="17" height="17" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20H24v8h11.3C33.6 33.7 29.2 37 24 37a13 13 0 0 1 0-26c3.1 0 5.9 1.1 8.1 2.9l5.7-5.7A21 21 0 1 0 45 24c0-1.4-.1-2.7-.4-4z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8A13 13 0 0 1 24 11c3.1 0 5.9 1.1 8.1 2.9l5.7-5.7A21 21 0 0 0 6.3 14.7z"/><path fill="#4CAF50" d="M24 45a21 21 0 0 0 14.6-5.9l-6.7-5.5A13 13 0 0 1 24 37a13 13 0 0 1-12.4-9.1l-6.6 5.1A21 21 0 0 0 24 45z"/><path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.4-2.5 4.4-4.7 5.6l6.7 5.5C41.7 35.4 45 30.1 45 24c0-1.4-.1-2.7-.4-4z"/></svg>
+    Continue with Google
+  </button>
+</div>
+
+<script>
+  // ── CONFIG ──────────────────────────────────────────────
+  const API_URL = 'https://storedge-backend.onrender.com';
+
+  // ── TEMP MAIL BLOCKLIST ─────────────────────────────────
+  // Comprehensive list of disposable/temp mail domains
+  const BLOCKED_DOMAINS = new Set([
+    'mailinator.com','guerrillamail.com','guerrillamail.net','guerrillamail.org',
+    'guerrillamail.biz','guerrillamail.de','guerrillamail.info','sharklasers.com',
+    'guerrillamailblock.com','grr.la','guerrillamail.net','spam4.me','trashmail.com',
+    'trashmail.me','trashmail.net','trashmail.at','trashmail.io','trashmail.org',
+    'tempmail.com','tempmail.net','tempmail.org','temp-mail.org','temp-mail.io',
+    'throwam.com','throwam.net','yopmail.com','yopmail.fr','yopmail.net',
+    'cool.fr.nf','jetable.fr.nf','nospam.ze.tc','nomail.xl.cx','mega.zik.dj',
+    'speed.1s.fr','courriel.fr.nf','moncourrier.fr.nf','yopmail.com',
+    'dispostable.com','maildrop.cc','mailnull.com','mailnull.net','spamgourmet.com',
+    'spamgourmet.net','spamgourmet.org','spamspot.com','spamspot.net',
+    'fakeinbox.com','fakeinbox.net','spam.la','spambox.us','spamfree24.org',
+    'spamfree24.de','spamfree24.net','spamfree24.info','spamfree24.com',
+    'mailnesia.com','getairmail.com','getnada.com','armyspy.com','cuvox.de',
+    'dayrep.com','einrot.com','fleckens.hu','gustr.com','jourrapide.com',
+    'rhyta.com','superrito.com','teleworm.us','spambog.com','spambog.de',
+    'spambog.ru','0-mail.com','0815.ru','0clickemail.com','10minutemail.com',
+    '10minutemail.net','10minutemail.org','10minutemail.co.uk','10minutemail.de',
+    '10minutemail.eu','10minutemail.us','10minemail.com','20minutemail.com',
+    'mohmal.com','throwam.com','throwam.net','mailtemp.net','discard.email',
+    'discardmail.com','discardmail.de','mailexpire.com','mailexpire.net',
+    'spamgob.com','spamgob.net','byom.de','filzmail.de','ihateyoualot.info',
+    'inoutmail.de','inoutmail.eu','inoutmail.info','inoutmail.net','kasmail.com',
+    'mailimate.com','mailmoat.com','mailnew.com','mailsiphon.com','mailzilla.org',
+    'mega-email.com','moncourrier.fr.nf','nospamfor.us','obobbo.com','spamavert.com',
+    'spamfree.eu','spamhereplease.com','spamhole.com','spamify.com','spaminator.de',
+    'spamkill.info','spaml.com','spaml.de','spammotel.com','spamok.com',
+    'tempinbox.co.uk','tempinbox.com','temporaryemail.net','temporaryemail.us',
+    'temporarymailaddress.com','thankyou2010.com','throwam.com','trashdevil.com',
+    'trashdevil.de','trashemail.de','trashimail.com','trashmail.at','trashmail.com',
+    'trashmail.io','trashmail.me','trashmail.net','uggsrock.com','wetrash.com',
+    'wh4f.org','whyspam.me','yep.it','yogamaven.com','zehnminutenmail.de',
+    'zippymail.info','zoemail.net','zoemail.org'
+  ]);
+
+  function isTempMail(email) {
+    const domain = email.split('@')[1]?.toLowerCase();
+    if (!domain) return true;
+    return BLOCKED_DOMAINS.has(domain);
+  }
+
+  // Basic real-domain check: must have a real TLD structure
+  function looksLegit(email) {
+    const re = /^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$/;
+    return re.test(email);
+  }
+
+  function showToast(msg, type='err') {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.className = `toast ${type} show`;
+    setTimeout(() => { t.classList.remove('show'); }, 4000);
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById('signupBtn');
+    btn.classList.toggle('loading', on);
+    btn.disabled = on;
+  }
+
+  async function handleSignup() {
+    const fname    = document.getElementById('fname').value.trim();
+    const lname    = document.getElementById('lname').value.trim();
+    const email    = document.getElementById('email').value.trim().toLowerCase();
+    const password = document.getElementById('password').value;
+
+    // ── Client-side validation ──
+    if (!fname || !lname) return showToast('Please enter your full name.');
+    if (!looksLegit(email)) return showToast('Please enter a valid email address.');
+    if (isTempMail(email))  return showToast('Disposable email addresses are not allowed. Please use your real email.');
+    if (password.length < 8) return showToast('Password must be at least 8 characters.');
+
+    setLoading(true);
+
+    try {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: `${fname} ${lname}`, email, password })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        // Map backend messages to friendly ones
+        if (data.message?.toLowerCase().includes('exists')) {
+          showToast('An account with this email already exists. Try logging in.');
+        } else {
+          showToast(data.message || 'Something went wrong. Try again.');
+        }
+        return;
+      }
+
+      // Success — show green toast then redirect to login
+      showToast('Account created! Redirecting to login…', 'ok');
+      setTimeout(() => { window.location.href = 'login.html'; }, 1800);
+
+    } catch (err) {
+      showToast('Cannot reach server. Check your connection and try again.');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleSignup();
+  });
+</script>
 </body>
 </html>
