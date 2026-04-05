@@ -100,6 +100,35 @@
     .upload-fab{position:fixed;bottom:28px;right:28px;background:var(--sky);border:none;border-radius:14px;padding:13px 20px;font-family:var(--font-body);font-size:14px;font-weight:600;color:#06090f;cursor:pointer;display:flex;align-items:center;gap:7px;box-shadow:0 8px 28px var(--sky-glow);transition:all 0.25s;z-index:50;}
     .upload-fab:hover{background:#22c5ff;transform:translateY(-2px);}
 
+
+    /* ── FOLDERS ── */
+    .folder-bar{display:flex;align-items:center;gap:10px;margin-bottom:18px;flex-wrap:wrap;}
+    .folder-chip{display:inline-flex;align-items:center;gap:7px;padding:7px 14px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;user-select:none;}
+    .folder-chip:hover{border-color:rgba(0,174,239,0.35);color:var(--text);}
+    .folder-chip.active{background:rgba(0,174,239,0.1);border-color:rgba(0,174,239,0.4);color:var(--sky);}
+    .folder-chip .fc-ico{font-size:14px;}
+    .folder-chip .fc-count{font-size:10px;background:rgba(255,255,255,0.08);padding:1px 6px;border-radius:99px;color:var(--muted);}
+    .new-folder-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;background:transparent;border:1px dashed rgba(255,255,255,0.15);border-radius:10px;font-size:13px;font-weight:500;color:var(--muted);cursor:pointer;transition:all 0.2s;font-family:var(--font-body);}
+    .new-folder-btn:hover{border-color:var(--sky);color:var(--sky);}
+
+    /* folder modal */
+    .folder-modal{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);background:var(--surface);border:1px solid var(--border);border-radius:18px;padding:28px;width:360px;z-index:300;display:none;}
+    .folder-modal.open{display:block;}
+    .folder-modal h3{font-family:var(--font-display);font-size:17px;font-weight:700;margin-bottom:18px;}
+    .folder-modal input{width:100%;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:var(--font-body);font-size:14px;color:var(--text);outline:none;margin-bottom:14px;}
+    .folder-modal input:focus{border-color:var(--sky);}
+    .folder-modal-btns{display:flex;gap:10px;}
+    .folder-modal-btns button{flex:1;padding:10px;border-radius:10px;font-family:var(--font-body);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all 0.2s;}
+    .fmb-cancel{background:rgba(255,255,255,0.06);color:var(--muted);}
+    .fmb-create{background:var(--sky);color:#06090f;}
+    .fmb-create:hover{background:#22c5ff;}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:299;display:none;}
+    .modal-backdrop.open{display:block;}
+
+    /* move-to-folder dropdown on file card */
+    .fa-btn.move{background:rgba(255,165,0,0.15);color:#ffaa00;}
+    .fa-btn.move:hover{background:rgba(255,165,0,0.3);}
+
     /* ── PREVIEW MODAL ── */
     .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:200;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(8px);}
     .modal-overlay.open{display:flex;}
@@ -202,6 +231,10 @@
     </div>
     <input type="file" id="file-input" style="display:none" multiple onchange="handleFileSelect(event)"/>
 
+    <div class="folder-bar" id="folder-bar">
+      <button class="new-folder-btn" onclick="openFolderModal()">＋ New Folder</button>
+    </div>
+
     <div class="sec-header">
       <div class="sec-title" id="view-title">My Files</div>
       <div class="view-label" id="view-label"></div>
@@ -224,6 +257,18 @@
   <div class="up-name" id="up-name"></div>
 </div>
 
+<!-- Folder create modal -->
+<div class="modal-backdrop" id="folder-backdrop" onclick="closeFolderModal()"></div>
+<div class="folder-modal" id="folder-modal">
+  <h3>📁 New Folder</h3>
+  <input id="folder-name-input" type="text" placeholder="Folder name…" maxlength="40"
+    onkeydown="if(event.key==='Enter')createFolder();if(event.key==='Escape')closeFolderModal()"/>
+  <div class="folder-modal-btns">
+    <button class="fmb-cancel" onclick="closeFolderModal()">Cancel</button>
+    <button class="fmb-create" onclick="createFolder()">Create</button>
+  </div>
+</div>
+
 <!-- Preview Modal -->
 <div class="modal-overlay" id="modal" onclick="closeModal(event)">
   <div class="modal" onclick="event.stopPropagation()">
@@ -242,6 +287,181 @@
 <div class="toast-wrap" id="toast-wrap"></div>
 
 <script>
+// ── FOLDERS (client-side — stored in localStorage) ──────
+// Folders are lightweight: just a name + list of fileIds
+// No backend needed — stored locally per user
+
+function getFolders() {
+  const uid = getUserId();
+  const raw = localStorage.getItem('storedge_folders_' + uid);
+  return raw ? JSON.parse(raw) : [];
+}
+
+function saveFolders(folders) {
+  const uid = getUserId();
+  localStorage.setItem('storedge_folders_' + uid, JSON.stringify(folders));
+}
+
+function getUserId() {
+  const u = localStorage.getItem('storedge_user');
+  if (!u) return 'anon';
+  return JSON.parse(u).id || JSON.parse(u)._id || 'anon';
+}
+
+function renderFolderBar() {
+  const bar     = document.getElementById('folder-bar');
+  const folders = getFolders();
+
+  // Clear existing chips (keep the + button)
+  bar.innerHTML = '<button class="new-folder-btn" onclick="openFolderModal()">＋ New Folder</button>';
+
+  folders.forEach(folder => {
+    const filesInFolder = allFiles.filter(f => (f.folderId || null) === folder.id && !f.deleted);
+    const chip = document.createElement('div');
+    chip.className = 'folder-chip' + (currentFolderId === folder.id ? ' active' : '');
+    chip.innerHTML = `<span class="fc-ico">📁</span><span>${folder.name}</span><span class="fc-count">${filesInFolder.length}</span>`;
+    chip.onclick   = () => openFolder(folder.id, folder.name);
+
+    // Right-click to rename/delete folder
+    chip.oncontextmenu = (e) => {
+      e.preventDefault();
+      if (confirm(\`Delete folder "\${folder.name}"? Files inside will not be deleted.\`)) {
+        deleteFolder(folder.id);
+      }
+    };
+    bar.appendChild(chip);
+  });
+}
+
+function openFolder(folderId, folderName) {
+  currentFolderId = folderId;
+  currentView     = 'folder-custom';
+  document.getElementById('view-title').textContent = '📁 ' + folderName;
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  const filtered = allFiles.filter(f => f.folderId === folderId && !f.deleted);
+  renderFiles(filtered);
+  renderFolderBar();
+}
+
+function openFolderModal() {
+  document.getElementById('folder-modal').classList.add('open');
+  document.getElementById('folder-backdrop').classList.add('open');
+  document.getElementById('folder-name-input').value = '';
+  setTimeout(() => document.getElementById('folder-name-input').focus(), 50);
+}
+
+function closeFolderModal() {
+  document.getElementById('folder-modal').classList.remove('open');
+  document.getElementById('folder-backdrop').classList.remove('open');
+}
+
+function createFolder() {
+  const name = document.getElementById('folder-name-input').value.trim();
+  if (!name) return;
+
+  const folders = getFolders();
+  if (folders.find(f => f.name.toLowerCase() === name.toLowerCase())) {
+    toast('A folder with that name already exists.', 'err'); return;
+  }
+
+  const newFolder = { id: 'folder_' + Date.now(), name, createdAt: new Date().toISOString() };
+  folders.push(newFolder);
+  saveFolders(folders);
+  closeFolderModal();
+  renderFolderBar();
+  toast(`Folder "${name}" created ✓`, 'ok');
+}
+
+function deleteFolder(folderId) {
+  let folders = getFolders();
+  folders = folders.filter(f => f.id !== folderId);
+  saveFolders(folders);
+
+  // Remove folderId from files in that folder (move back to root)
+  allFiles = allFiles.map(f => f.folderId === folderId ? { ...f, folderId: null } : f);
+  syncFolderAssignments();
+
+  if (currentFolderId === folderId) {
+    currentFolderId = null;
+    setView('all');
+  }
+  renderFolderBar();
+  toast('Folder deleted. Files moved to My Files.', 'ok');
+}
+
+function moveFileToFolder(fileId, folderId) {
+  allFiles = allFiles.map(f => f._id === fileId ? { ...f, folderId } : f);
+  syncFolderAssignments();
+  renderFolderBar();
+  const folder = getFolders().find(f => f.id === folderId);
+  toast(`Moved to ${folder ? folder.name : 'folder'} ✓`, 'ok');
+  renderFiles(filterFiles(allFiles, currentView));
+}
+
+function syncFolderAssignments() {
+  // Persist folder assignments in localStorage keyed by fileId
+  const uid  = getUserId();
+  const map  = {};
+  allFiles.forEach(f => { if (f.folderId) map[f._id] = f.folderId; });
+  localStorage.setItem('storedge_file_folders_' + uid, JSON.stringify(map));
+}
+
+function loadFolderAssignments() {
+  // Restore folder assignments into allFiles
+  const uid = getUserId();
+  const raw = localStorage.getItem('storedge_file_folders_' + uid);
+  if (!raw) return;
+  const map = JSON.parse(raw);
+  allFiles = allFiles.map(f => ({ ...f, folderId: map[f._id] || null }));
+}
+
+function showMoveMenu(fileId, fileName, e) {
+  e.stopPropagation();
+  const folders = getFolders();
+  if (!folders.length) {
+    toast('No folders yet. Create one first with ＋ New Folder.', 'info', 3500);
+    return;
+  }
+
+  // Build a quick dropdown
+  const existing = document.getElementById('move-menu');
+  if (existing) existing.remove();
+
+  const menu  = document.createElement('div');
+  menu.id     = 'move-menu';
+  menu.style.cssText = `
+    position:fixed;background:var(--surface2);border:1px solid var(--border);
+    border-radius:10px;padding:6px;z-index:400;min-width:160px;
+    box-shadow:0 8px 24px rgba(0,0,0,0.5);
+  `;
+
+  // Position near click
+  menu.style.left = Math.min(e.clientX, window.innerWidth - 180) + 'px';
+  menu.style.top  = Math.min(e.clientY, window.innerHeight - (folders.length * 36 + 20)) + 'px';
+
+  folders.forEach(folder => {
+    const item = document.createElement('div');
+    item.style.cssText = 'padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px;';
+    item.innerHTML = `📁 ${folder.name}`;
+    item.onmouseenter = () => item.style.background = 'rgba(255,255,255,0.06)';
+    item.onmouseleave = () => item.style.background = 'transparent';
+    item.onclick      = () => { moveFileToFolder(fileId, folder.id); menu.remove(); };
+    menu.appendChild(item);
+  });
+
+  // Remove folder option
+  const removeItem = document.createElement('div');
+  removeItem.style.cssText = 'padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:var(--muted);border-top:1px solid var(--border);margin-top:4px;';
+  removeItem.innerHTML = '✕ Remove from folder';
+  removeItem.onmouseenter = () => removeItem.style.background = 'rgba(255,255,255,0.04)';
+  removeItem.onmouseleave = () => removeItem.style.background = 'transparent';
+  removeItem.onclick      = () => { moveFileToFolder(fileId, null); menu.remove(); };
+  menu.appendChild(removeItem);
+
+  document.body.appendChild(menu);
+  setTimeout(() => document.addEventListener('click', () => menu.remove(), { once: true }), 10);
+}
+
 // ── CONFIG ───────────────────────────────────────────────
 const API_URL = 'https://storedge-backend.onrender.com';
 const FREE_STORAGE = 2 * 1024 * 1024 * 1024;
@@ -251,9 +471,10 @@ const token = localStorage.getItem('storedge_token');
 if (!token) window.location.href = 'login.html';
 
 // ── STATE ────────────────────────────────────────────────
-let allFiles    = [];
-let currentView = 'all';
-let currentFile = null; // for modal download
+let allFiles       = [];
+let currentView    = 'all';
+let currentFile    = null; // for modal download
+let currentFolderId = null;
 
 // ── TOAST ────────────────────────────────────────────────
 function toast(msg, type='ok', dur=3500) {
@@ -402,7 +623,9 @@ async function loadFiles() {
     if (res.status === 401) { logout(); return; }
     if (!res.ok) return;
     allFiles = await res.json();
+    loadFolderAssignments();
     document.getElementById('s-files').textContent = allFiles.length;
+    renderFolderBar();
     renderFiles(filterFiles(allFiles, currentView));
   } catch {
     document.getElementById('s-files').textContent = '—';
@@ -444,6 +667,7 @@ function renderFiles(files) {
       <div class="file-actions" onclick="event.stopPropagation()">
         <button class="fa-btn preview" title="Preview" onclick="openPreview(${JSON.stringify(f).replace(/"/g,'&quot;')})">👁</button>
         <button class="fa-btn download" title="Download" onclick="triggerDownload('${f.fileUrl}','${f.fileName}')">⬇</button>
+        <button class="fa-btn move" title="Move to folder" onclick="showMoveMenu('${f._id}','${f.fileName}',event)">📁</button>
         <button class="fa-btn del" title="Delete" onclick="deleteFile('${f._id}','${f.fileName}')">🗑</button>
       </div>
     `;
@@ -491,14 +715,24 @@ function downloadFile() {
   if (currentFile) triggerDownload(currentFile.fileUrl, currentFile.fileName);
 }
 
-function triggerDownload(url, name) {
-  const a = document.createElement('a');
-  a.href     = url;
-  a.download = name;
-  a.target   = '_blank';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+async function triggerDownload(url, name) {
+  toast('Preparing download…', 'info', 2000);
+  try {
+    const res  = await fetch(url);
+    const blob = await res.blob();
+    const burl = URL.createObjectURL(blob);
+    const a    = document.createElement('a');
+    a.href     = burl;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(burl), 10000);
+  } catch {
+    // CORS fallback — open in new tab
+    window.open(url, '_blank');
+    toast('Tip: right-click the image → Save As to download', 'info', 6000);
+  }
 }
 
 // Close modal on Escape key
